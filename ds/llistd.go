@@ -1,12 +1,12 @@
 package ds
 
+// 双向链表 Doubly Linked List
+
 import (
 	"errors"
 	"fmt"
 	"math"
 )
-
-// 双向链表 Doubly Linked List
 
 type Direction int
 
