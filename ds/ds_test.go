@@ -1,9 +1,18 @@
 package ds_test
 
 import (
+	"fmt"
 	"radix/ds"
 	"testing"
 )
+
+func TestBSTree(t *testing.T) {
+	var d *[]interface{}
+	tmp := make([]interface{}, 1)
+	d = &tmp
+	*d = append(*d, 123)
+	fmt.Println(*d)
+}
 
 func TestLList(t *testing.T) {
 	d := ds.NewLList()

@@ -39,7 +39,7 @@ func (l *LList) Range() (*LLNode, bool) {
 	return r, GoOn
 }
 
-func (l *LList) LLNode(index uint) (n *LLNode, err error) {
+func (l *LList) Search(index uint) (n *LLNode, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
 		return
@@ -98,7 +98,7 @@ func (l *LList) Insert(val interface{}, index uint) *LList {
 		l.head = node
 		l.current = node
 	case index > 0:
-		prevLLNode, err := l.LLNode(index - 1)
+		prevLLNode, err := l.Search(index - 1)
 		if err != nil {
 			panic(err)
 		}
@@ -121,7 +121,7 @@ func (l *LList) Remove(index uint) *LList {
 			l.tail = nil
 		}
 	case index > 0:
-		prevLLNode, err := l.LLNode(index - 1)
+		prevLLNode, err := l.Search(index - 1)
 		if err != nil {
 			panic(err)
 		}

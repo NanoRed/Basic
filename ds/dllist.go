@@ -64,7 +64,7 @@ func (l *DLList) Range(d Direction) (*DLLNode, bool) {
 	return r, GoOn
 }
 
-func (l *DLList) DLLNode(index int) (n *DLLNode, err error) {
+func (l *DLList) Search(index int) (n *DLLNode, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
 		return
@@ -147,7 +147,7 @@ func (l *DLList) Insert(val interface{}, index int) *DLList {
 		l.head = node
 		l.current = node
 	default:
-		origDLLNode, err := l.DLLNode(index)
+		origDLLNode, err := l.Search(index)
 		if err != nil {
 			panic(err)
 		}
@@ -163,7 +163,7 @@ func (l *DLList) Insert(val interface{}, index int) *DLList {
 }
 
 func (l *DLList) Remove(index int) *DLList {
-	rDLLNode, err := l.DLLNode(index)
+	rDLLNode, err := l.Search(index)
 	if err != nil {
 		panic(err)
 	}
