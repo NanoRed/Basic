@@ -117,14 +117,36 @@ func (l *LList) Remove(index uint) *LList {
 		}
 		l.head = l.head.Next
 		l.current = l.head
+		if l.head == nil {
+			l.tail = nil
+		}
 	case index > 0:
 		prevLLNode, err := l.LLNode(index - 1)
 		if err != nil {
 			panic(err)
 		}
 		prevLLNode.Next = prevLLNode.Next.Next
+		if prevLLNode.Next == nil {
+			l.tail = prevLLNode
+		}
 	}
 	l.length--
+	return l
+}
+
+func (l *LList) Reverse() *LList {
+	l.Reset()
+	var prevNode *LLNode
+	for {
+		node, GoOn := l.Range()
+		if GoOn == false {
+			break
+		}
+		node.Next = prevNode
+		prevNode = node
+	}
+	l.head, l.tail = l.tail, l.head
+	l.Reset()
 	return l
 }
 

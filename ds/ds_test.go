@@ -37,6 +37,11 @@ func TestLList(t *testing.T) {
 	if n6.Value.(int) != 0 || err != nil {
 		t.Fatal("此元素应该为0")
 	}
+	d.Append(4)
+	d.Append(5)
+	d.Append(6)
+	d.Append(7)
+	d.Reverse()
 	d.Print()
 	t.Log("测试成功")
 }
