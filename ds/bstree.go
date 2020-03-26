@@ -325,10 +325,18 @@ func (t *BSTree) Print() {
 								blank += " "
 							}
 							lines[c-1][0] = append(
-								lines[c-1][0][:index[n]], append([]string{blank}, lines[c-1][0][index[n]:]...)...
+								lines[c-1][0][:index[n]],
+								append(
+									[]string{blank},
+									lines[c-1][0][index[n]:]...
+								)...
 							)
 							lines[c-1][1] = append(
-								lines[c-1][1][:index[n]], append([]string{blank}, lines[c-1][1][index[n]:]...)...
+								lines[c-1][1][:index[n]],
+								append(
+									[]string{blank},
+									lines[c-1][1][index[n]:]...
+								)...
 							)
 						} else if pos < pos2 {
 							blank := ""
@@ -443,10 +451,18 @@ func (t *BSTree) Print() {
 								blank += " "
 							}
 							lines[c-1][0] = append(
-								lines[c-1][0][:index[n]], append([]string{blank}, lines[c-1][0][index[n]:]...)...
+								lines[c-1][0][:index[n]],
+								append(
+									[]string{blank},
+									lines[c-1][0][index[n]:]...
+								)...
 							)
 							lines[c-1][1] = append(
-								lines[c-1][1][:index[n]], append([]string{blank}, lines[c-1][1][index[n]:]...)...
+								lines[c-1][1][:index[n]],
+								append(
+									[]string{blank},
+									lines[c-1][1][index[n]:]...
+								)...
 							)
 						} else if pos < pos2 {
 							blank := ""
