@@ -294,8 +294,8 @@ func (t *BSTree) Print() {
 				strB = make([]string, 0)
 				lines = append(lines, strG)
 				c := len(lines)
+				PrintMethodGoBackA:
 				if c > 1 {
-				PrintMethodGoBack:
 					tmp := strings.Join(lines[c-2][1], "")
 					n := -1
 					cPos := 0
@@ -367,7 +367,8 @@ func (t *BSTree) Print() {
 									append([]string{blank}, lines[c-2][0][index2[n]:]...)...
 								)
 							}
-							goto PrintMethodGoBack
+							c--
+							goto PrintMethodGoBackA
 						}
 					}
 				}
@@ -420,8 +421,8 @@ func (t *BSTree) Print() {
 				strB = make([]string, 0)
 				lines = append(lines, strG)
 				c := len(lines)
+				PrintMethodGoBackB:
 				if c > 1 {
-				PrintMethodGoBack2:
 					tmp := strings.Join(lines[c-2][1], "")
 					n := -1
 					cPos := 0
@@ -493,7 +494,8 @@ func (t *BSTree) Print() {
 									append([]string{blank}, lines[c-2][0][index2[n]:]...)...
 								)
 							}
-							goto PrintMethodGoBack2
+							c--
+							goto PrintMethodGoBackB
 						}
 					}
 				}

@@ -19,8 +19,13 @@ func TestBSTree(t *testing.T) {
 	bst.Append(73, nil)
 	bst.Append(66, nil)
 	bst.Append(1, nil)
+	bst.Append(665, nil)
+	bst.Append(664, nil)
+	bst.Append(663, nil)
 	bst.Remove(73)
 	bst.Remove(564)
+	bst.Append(662, nil)
+	bst.Append(661, nil)
 	bst.Print()
 }
 
