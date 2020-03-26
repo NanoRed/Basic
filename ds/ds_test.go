@@ -6,7 +6,22 @@ import (
 )
 
 func TestBSTree(t *testing.T) {
-
+	bst := ds.NewBSTree()
+	bst.Append(150, nil)
+	bst.Append(102, nil)
+	bst.Append(12, nil)
+	bst.Append(101, nil)
+	bst.Append(3, nil)
+	bst.Append(564, nil)
+	bst.Append(777, nil)
+	bst.Append(666, nil)
+	bst.Append(888, nil)
+	bst.Append(73, nil)
+	bst.Append(66, nil)
+	bst.Append(1, nil)
+	bst.Remove(73)
+	bst.Remove(564)
+	bst.Print()
 }
 
 func TestLList(t *testing.T) {
