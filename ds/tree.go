@@ -40,19 +40,19 @@ func (t *Tree) DepthFirstSearch() {
 		return
 	}
 	stack := []TNode{ *t.root }
-	fmt.Println(stack[0].Value)
-	for {
-		if len(stack) == 0 {
-			break
-		}
-		if len(stack[0].Child) == 0 {
-			stack = stack[1:]
-			if len(stack) != 0 {
-				stack[0].Child = stack[0].Child[1:]
+	lastIndex := 0
+	fmt.Println(stack[lastIndex].Value)
+	for lastIndex >= 0 {
+		if len(stack[lastIndex].Child) == 0 {
+			stack = stack[:lastIndex]
+			lastIndex--
+			if lastIndex >= 0 {
+				stack[lastIndex].Child = stack[lastIndex].Child[1:]
 			}
 		} else {
-			stack = append([]TNode{ *stack[0].Child[0] }, stack...)
-			fmt.Println(stack[0].Value)
+			stack = append(stack, *stack[lastIndex].Child[0])
+			lastIndex++
+			fmt.Println(stack[lastIndex].Value)
 		}
 	}
 }
