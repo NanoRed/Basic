@@ -24,6 +24,32 @@ func TestTree(t *testing.T) {
 	tr.DepthFirstSearch()
 }
 
+func BenchmarkTree_DepthFirstSearch(b *testing.B) {
+	tr := ds.NewTree()
+	tr.Append(nil, 1) // 根
+	tr.Append(&[]int{}, 2)
+	tr.Append(&[]int{}, 3)
+	tr.Append(&[]int{0}, 4)
+	tr.Append(&[]int{0}, 5)
+	tr.Append(&[]int{0}, 6)
+	tr.Append(&[]int{0, 1}, 9)
+	tr.Append(&[]int{0, 1, 0}, 13)
+	tr.Append(&[]int{0, 1, 0}, 14)
+	tr.Append(&[]int{0, 2}, 10)
+	tr.Append(&[]int{0, 2}, 11)
+	tr.Append(&[]int{1}, 7)
+	tr.Append(&[]int{1}, 8)
+	tr.Append(&[]int{1, 1}, 12)
+
+	b.StopTimer()
+	b.ResetTimer()
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		tr.DepthFirstSearch()
+	}
+}
+
 func TestBSTree(t *testing.T) {
 	bst := ds.NewBSTree()
 	bst.Append(150, nil)
