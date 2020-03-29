@@ -21,7 +21,11 @@ func TestTree(t *testing.T) {
 	tr.Append(&[]int{1}, 7)
 	tr.Append(&[]int{1}, 8)
 	tr.Append(&[]int{1, 1}, 12)
+	tr.Remove(&[]int{0, 1})
 	tr.DepthFirstSearch()
+	//tr.BroadFirstSearch()
+	//tr.DLR()
+	//tr.LRD()
 }
 
 func BenchmarkTree_DepthFirstSearch(b *testing.B) {

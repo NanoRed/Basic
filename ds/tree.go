@@ -23,6 +23,7 @@ func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 		t.root = &TNode{
 			Value: val,
 		}
+		t.count++
 		return t
 	}
 	node := t.root
@@ -32,7 +33,54 @@ func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 	node.Child = append(node.Child, &TNode{
 		Value: val,
 	})
+	t.count++
 	return t
+}
+
+func (t *Tree) Remove(index *[]int) *Tree {
+	if index == nil {
+		t.root = nil
+		t.count = 0
+		return t
+	}
+	node := t.root
+	count := len(*index)
+	for i := 0; i < count; i++ {
+		if i == count - 1 {
+			node.Child = append(node.Child[:(*index)[i]], node.Child[(*index)[i]+1:]...)
+			break
+		}
+		node = node.Child[(*index)[i]]
+	}
+	return t
+}
+
+func (t *Tree) DLR() {
+	if t.root == nil {
+		return
+	}
+	var f func(*TNode)
+	f = func(node *TNode) {
+		fmt.Println(node.Value)
+		for i := 0; i < len(node.Child); i++ {
+			f(node.Child[i])
+		}
+	}
+	f(t.root)
+}
+
+func (t *Tree) LRD() {
+	if t.root == nil {
+		return
+	}
+	var f func(*TNode)
+	f = func(node *TNode) {
+		for i := 0; i < len(node.Child); i++ {
+			f(node.Child[i])
+		}
+		fmt.Println(node.Value)
+	}
+	f(t.root)
 }
 
 func (t *Tree) DepthFirstSearch() {
@@ -53,6 +101,25 @@ func (t *Tree) DepthFirstSearch() {
 		} else {
 			stack = append([]TNode{ *stack[0].Child[0] }, stack...)
 			fmt.Println(stack[0].Value)
+		}
+	}
+}
+
+func (t *Tree) BroadFirstSearch() {
+	if t.root == nil {
+		return
+	}
+	queue := []*TNode{ t.root }
+	queueLen := 1
+	for queueLen > 0 {
+		current := queue[0]
+		fmt.Println(current.Value)
+		queue = queue[1:]
+		queueLen--
+		cLen := len(current.Child)
+		if cLen > 0 {
+			queue = append(queue, current.Child...)
+			queueLen += cLen
 		}
 	}
 }
