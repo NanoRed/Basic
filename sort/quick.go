@@ -1,6 +1,6 @@
 package sort
 
-// 快速排序 Quick Sort 1
+// 快速排序 Quick Sort
 
 func QuickSort(arr *[]int) {
 	section := make([][]int, 0)
