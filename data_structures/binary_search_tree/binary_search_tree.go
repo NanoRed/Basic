@@ -32,37 +32,34 @@ func (t *Tree) Height() uint {
 }
 
 func (t *Tree) Append(key int, val interface{}) *Tree {
-	var appendNode func(int, interface{}, *Node) (*Node, bool)
-	appendNode = func(key int, val interface{}, node *Node) (*Node, bool) {
+	var appendNode func(int, interface{}, *Node, uint) *Node
+	appendNode = func(key int, val interface{}, node *Node, depth uint) *Node {
 		if node == nil {
 			node = &Node{
 				Key: key,
 				Value: val,
 			}
 			t.count++
-			return node, true
+			if depth > t.height {
+				t.height = depth
+			}
+			return node
 		} else if key == node.Key {
 			node.Value = val
-			return node, false
+			return node
 		}
 
 		if key < node.Key {
-			var checkAddHeight bool
-			node.Left, checkAddHeight = appendNode(key, val, node.Left)
-			if checkAddHeight && node.Right == nil {
-				t.height++
-			}
+			depth++
+			node.Left = appendNode(key, val, node.Left, depth)
 		} else {
-			var checkAddHeight bool
-			node.Right, checkAddHeight = appendNode(key, val, node.Right)
-			if checkAddHeight && node.Left == nil {
-				t.height++
-			}
+			depth++
+			node.Right = appendNode(key, val, node.Right, depth)
 		}
 
-		return node, false
+		return node
 	}
-	t.root, _ = appendNode(key, val, t.root)
+	t.root = appendNode(key, val, t.root, 1)
 	return t
 }
 
