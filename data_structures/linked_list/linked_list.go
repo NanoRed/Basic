@@ -1,4 +1,4 @@
-package ds
+package linked_list
 
 // 单向链表 Linked List
 
@@ -7,39 +7,39 @@ import (
 	"fmt"
 )
 
-type LList struct {
-	head, tail, current *LLNode
+type List struct {
+	head, tail, current *Node
 	length uint
 }
 
-type LLNode struct {
+type Node struct {
 	Value interface{}
-	Next *LLNode
+	Next *Node
 }
 
-func (l *LList) Len() uint {
+func (l *List) Len() uint {
 	return l.length
 }
 
-func (l *LList) Reset() {
+func (l *List) Reset() {
 	l.current = l.head
 }
 
-func (l *LList) Range() (*LLNode, bool) {
+func (l *List) Range() (*Node, bool) {
 	r := l.current
-	GoOn := true
+	ctn := true
 	if r == nil {
 		l.current = l.head
-		GoOn = false
+		ctn = false
 	} else if l.current.Next == nil {
 		l.current = nil
 	} else {
 		l.current = l.current.Next
 	}
-	return r, GoOn
+	return r, ctn
 }
 
-func (l *LList) Search(index uint) (n *LLNode, err error) {
+func (l *List) Search(index uint) (n *Node, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
 		return
@@ -53,8 +53,8 @@ func (l *LList) Search(index uint) (n *LLNode, err error) {
 	case index > 0:
 		l.Reset()
 		for {
-			node, GoOn := l.Range()
-			if GoOn == false {
+			node, ctn := l.Range()
+			if ctn == false {
 				err = errors.New("out of range")
 				break
 			} else if index == 0 {
@@ -69,15 +69,15 @@ func (l *LList) Search(index uint) (n *LLNode, err error) {
 	return
 }
 
-func (l *LList) Append(val interface{}) *LList {
+func (l *List) Append(val interface{}) *List {
 	if l.tail == nil {
-		l.head = &LLNode{
+		l.head = &Node{
 			Value: val,
 		}
 		l.tail = l.head
 		l.current = l.head
 	} else {
-		l.tail.Next = &LLNode {
+		l.tail.Next = &Node {
 			Value: val,
 		}
 		l.tail = l.tail.Next
@@ -86,8 +86,8 @@ func (l *LList) Append(val interface{}) *LList {
 	return l
 }
 
-func (l *LList) Insert(val interface{}, index uint) *LList {
-	node := &LLNode{
+func (l *List) Insert(val interface{}, index uint) *List {
+	node := &Node{
 		Value: val,
 	}
 	switch {
@@ -98,18 +98,18 @@ func (l *LList) Insert(val interface{}, index uint) *LList {
 		l.head = node
 		l.current = node
 	case index > 0:
-		prevLLNode, err := l.Search(index - 1)
+		prevNode, err := l.Search(index - 1)
 		if err != nil {
 			panic(err)
 		}
-		node.Next = prevLLNode.Next
-		prevLLNode.Next = node
+		node.Next = prevNode.Next
+		prevNode.Next = node
 	}
 	l.length++
 	return l
 }
 
-func (l *LList) Remove(index uint) *LList {
+func (l *List) Remove(index uint) *List {
 	switch {
 	case index == 0:
 		if l.length == 0 {
@@ -121,25 +121,25 @@ func (l *LList) Remove(index uint) *LList {
 			l.tail = nil
 		}
 	case index > 0:
-		prevLLNode, err := l.Search(index - 1)
+		prevNode, err := l.Search(index - 1)
 		if err != nil {
 			panic(err)
 		}
-		prevLLNode.Next = prevLLNode.Next.Next
-		if prevLLNode.Next == nil {
-			l.tail = prevLLNode
+		prevNode.Next = prevNode.Next.Next
+		if prevNode.Next == nil {
+			l.tail = prevNode
 		}
 	}
 	l.length--
 	return l
 }
 
-func (l *LList) Reverse() *LList {
+func (l *List) Reverse() *List {
 	l.Reset()
-	var prevNode *LLNode
+	var prevNode *Node
 	for {
-		node, GoOn := l.Range()
-		if GoOn == false {
+		node, ctn := l.Range()
+		if ctn == false {
 			break
 		}
 		node.Next = prevNode
@@ -150,7 +150,7 @@ func (l *LList) Reverse() *LList {
 	return l
 }
 
-func (l *LList) Slice() []interface{} {
+func (l *List) Slice() []interface{} {
 	s := make([]interface{}, l.length)
 	var i uint
 	l.Reset()
@@ -162,10 +162,10 @@ func (l *LList) Slice() []interface{} {
 	return s
 }
 
-func (l *LList) Print() {
+func (l *List) Print() {
 	fmt.Println(l.Slice())
 }
 
-func NewLList() *LList {
-	return &LList{}
+func NewList() *List {
+	return &List{}
 }

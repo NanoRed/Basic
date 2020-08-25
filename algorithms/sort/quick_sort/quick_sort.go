@@ -1,4 +1,4 @@
-package sort
+package quick_sort
 
 // 快速排序 Quick Sort
 

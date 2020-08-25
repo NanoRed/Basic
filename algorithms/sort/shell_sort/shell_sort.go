@@ -1,4 +1,4 @@
-package sort
+package shell_sort
 
 // 希尔排序 Shell Sort
 

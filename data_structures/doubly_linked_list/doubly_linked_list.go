@@ -1,4 +1,4 @@
-package ds
+package doubly_linked_list
 
 // 双向链表 Doubly Linked List
 
@@ -11,60 +11,60 @@ import (
 type Direction int
 
 const (
-	DLLFromHead Direction = iota
-	DLLFromTail
+	FromHead Direction = iota
+	FromTail
 )
 
-type DLList struct {
-	head, tail, current *DLLNode
+type List struct {
+	head, tail, current *Node
 	length uint
 }
 
-type DLLNode struct {
+type Node struct {
 	Value interface{}
-	Prev *DLLNode
-	Next *DLLNode
+	Prev *Node
+	Next *Node
 }
 
-func (l *DLList) Len() uint {
+func (l *List) Len() uint {
 	return l.length
 }
 
-func (l *DLList) Reset() {
+func (l *List) Reset() {
 	l.current = l.head
 }
 
-func (l *DLList) End() {
+func (l *List) End() {
 	l.current = l.tail
 }
 
-func (l *DLList) Range(d Direction) (*DLLNode, bool) {
+func (l *List) Range(d Direction) (*Node, bool) {
 	r := l.current
-	GoOn := true
+	ctn := true
 	switch d {
-	case DLLFromHead:
+	case FromHead:
 		if r == nil {
 			l.current = l.head
-			GoOn = false
+			ctn = false
 		} else if l.current.Next == nil {
 			l.current = nil
 		} else {
 			l.current = l.current.Next
 		}
-	case DLLFromTail:
+	case FromTail:
 		if r == nil {
 			l.current = l.tail
-			GoOn = false
+			ctn = false
 		} else if l.current.Prev == nil {
 			l.current = nil
 		} else {
 			l.current = l.current.Prev
 		}
 	}
-	return r, GoOn
+	return r, ctn
 }
 
-func (l *DLList) Search(index int) (n *DLLNode, err error) {
+func (l *List) Search(index int) (n *Node, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
 		return
@@ -84,8 +84,8 @@ func (l *DLList) Search(index int) (n *DLLNode, err error) {
 	case index > 0:
 		l.Reset()
 		for {
-			node, GoOn := l.Range(DLLFromHead)
-			if GoOn == false {
+			node, ctn := l.Range(FromHead)
+			if ctn == false {
 				err = errors.New("out of range")
 				break
 			} else if index == 0 {
@@ -99,8 +99,8 @@ func (l *DLList) Search(index int) (n *DLLNode, err error) {
 	case index < 0:
 		l.End()
 		for {
-			node, GoOn := l.Range(DLLFromTail)
-			if GoOn == false {
+			node, ctn := l.Range(FromTail)
+			if ctn == false {
 				err = errors.New("out of range")
 				break
 			} else {
@@ -116,15 +116,15 @@ func (l *DLList) Search(index int) (n *DLLNode, err error) {
 	return
 }
 
-func (l *DLList) Append(val interface{}) *DLList {
+func (l *List) Append(val interface{}) *List {
 	if l.tail == nil {
-		l.head = &DLLNode{
+		l.head = &Node{
 			Value: val,
 		}
 		l.tail = l.head
 		l.current = l.head
 	} else {
-		l.tail.Next = &DLLNode {
+		l.tail.Next = &Node {
 			Value: val,
 			Prev: l.tail,
 		}
@@ -134,8 +134,8 @@ func (l *DLList) Append(val interface{}) *DLList {
 	return l
 }
 
-func (l *DLList) Insert(val interface{}, index int) *DLList {
-	node := &DLLNode{
+func (l *List) Insert(val interface{}, index int) *List {
+	node := &Node{
 		Value: val,
 	}
 	switch {
@@ -147,42 +147,42 @@ func (l *DLList) Insert(val interface{}, index int) *DLList {
 		l.head = node
 		l.current = node
 	default:
-		origDLLNode, err := l.Search(index)
+		origNode, err := l.Search(index)
 		if err != nil {
 			panic(err)
 		}
-		node.Next = origDLLNode
-		node.Prev = origDLLNode.Prev
-		if origDLLNode.Prev != nil {
-			origDLLNode.Prev.Next = node
+		node.Next = origNode
+		node.Prev = origNode.Prev
+		if origNode.Prev != nil {
+			origNode.Prev.Next = node
 		}
-		origDLLNode.Prev = node
+		origNode.Prev = node
 	}
 	l.length++
 	return l
 }
 
-func (l *DLList) Remove(index int) *DLList {
-	rDLLNode, err := l.Search(index)
+func (l *List) Remove(index int) *List {
+	rNode, err := l.Search(index)
 	if err != nil {
 		panic(err)
 	}
-	if rDLLNode.Prev != nil {
-		rDLLNode.Prev.Next = rDLLNode.Next
+	if rNode.Prev != nil {
+		rNode.Prev.Next = rNode.Next
 	} else {
-		l.head = rDLLNode.Next
-		l.current = rDLLNode.Next
+		l.head = rNode.Next
+		l.current = rNode.Next
 	}
-	if rDLLNode.Next != nil {
-		rDLLNode.Next.Prev = rDLLNode.Prev
+	if rNode.Next != nil {
+		rNode.Next.Prev = rNode.Prev
 	} else {
-		l.tail = rDLLNode.Prev
+		l.tail = rNode.Prev
 	}
 	l.length--
 	return l
 }
 
-func (l *DLList) Slice() []interface{} {
+func (l *List) Slice() []interface{} {
 	s := make([]interface{}, l.length)
 	var i uint
 	l.Reset()
@@ -194,10 +194,10 @@ func (l *DLList) Slice() []interface{} {
 	return s
 }
 
-func (l *DLList) Print() {
+func (l *List) Print() {
 	fmt.Println(l.Slice())
 }
 
-func NewDLList() *DLList {
-	return &DLList{}
+func NewList() *List {
+	return &List{}
 }

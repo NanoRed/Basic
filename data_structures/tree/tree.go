@@ -1,17 +1,17 @@
-package ds
-
-import "fmt"
+package tree
 
 // 树 Tree
 
+import "fmt"
+
 type Tree struct {
-	root *TNode
+	root *Node
 	count uint
 }
 
-type TNode struct {
+type Node struct {
 	Value interface{}
-	Child []*TNode
+	Child []*Node
 }
 
 func (t *Tree) Len() uint {
@@ -20,7 +20,7 @@ func (t *Tree) Len() uint {
 
 func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 	if index == nil {
-		t.root = &TNode{
+		t.root = &Node{
 			Value: val,
 		}
 		t.count++
@@ -30,7 +30,7 @@ func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 	for i := 0; i < len(*index); i++ {
 		node = node.Child[(*index)[i]]
 	}
-	node.Child = append(node.Child, &TNode{
+	node.Child = append(node.Child, &Node{
 		Value: val,
 	})
 	t.count++
@@ -59,8 +59,8 @@ func (t *Tree) DLR() {
 	if t.root == nil {
 		return
 	}
-	var f func(*TNode)
-	f = func(node *TNode) {
+	var f func(*Node)
+	f = func(node *Node) {
 		fmt.Println(node.Value)
 		for i := 0; i < len(node.Child); i++ {
 			f(node.Child[i])
@@ -73,8 +73,8 @@ func (t *Tree) LRD() {
 	if t.root == nil {
 		return
 	}
-	var f func(*TNode)
-	f = func(node *TNode) {
+	var f func(*Node)
+	f = func(node *Node) {
 		for i := 0; i < len(node.Child); i++ {
 			f(node.Child[i])
 		}
@@ -87,7 +87,7 @@ func (t *Tree) DepthFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	stack := []TNode{ *t.root }
+	stack := []Node{ *t.root }
 	fmt.Println(stack[0].Value)
 	for {
 		if len(stack) == 0 {
@@ -99,7 +99,7 @@ func (t *Tree) DepthFirstSearch() {
 				stack[0].Child = stack[0].Child[1:]
 			}
 		} else {
-			stack = append([]TNode{ *stack[0].Child[0] }, stack...)
+			stack = append([]Node{ *stack[0].Child[0] }, stack...)
 			fmt.Println(stack[0].Value)
 		}
 	}
@@ -109,7 +109,7 @@ func (t *Tree) BroadFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	queue := []*TNode{ t.root }
+	queue := []*Node{ t.root }
 	queueLen := 1
 	for queueLen > 0 {
 		current := queue[0]

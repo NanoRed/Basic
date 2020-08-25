@@ -1,4 +1,6 @@
-package ds
+package binary_search_tree
+
+// 二叉查找树 Binary Search Tree
 
 import (
 	"errors"
@@ -8,34 +10,32 @@ import (
 	"strings"
 )
 
-// 二叉查找树 Binary Search Tree
-
-type BSTree struct {
-	root *BSTNode
+type Tree struct {
+	root *Node
 	count uint
 	height uint
 }
 
-type BSTNode struct {
+type Node struct {
 	Key int
 	Value *[]interface{}
-	Left *BSTNode
-	Right *BSTNode
+	Left *Node
+	Right *Node
 }
 
-func (t *BSTree) Len() uint {
+func (t *Tree) Len() uint {
 	return t.count
 }
 
-func (t *BSTree) Height() uint {
+func (t *Tree) Height() uint {
 	return t.height
 }
 
-func (t *BSTree) Append(key int, val interface{}) *BSTree {
-	var appendNode func(int, interface{}, *BSTNode) (*BSTNode, bool)
-	appendNode = func(key int, val interface{}, node *BSTNode) (*BSTNode, bool) {
+func (t *Tree) Append(key int, val interface{}) *Tree {
+	var appendNode func(int, interface{}, *Node) (*Node, bool)
+	appendNode = func(key int, val interface{}, node *Node) (*Node, bool) {
 		if node == nil {
-			node = &BSTNode{
+			node = &Node{
 				Key: key,
 			}
 			t.count++
@@ -76,7 +76,7 @@ func (t *BSTree) Append(key int, val interface{}) *BSTree {
 	return t
 }
 
-func (t *BSTree) Search(key int) (*BSTNode, error) {
+func (t *Tree) Search(key int) (*Node, error) {
 	current := t.root
 	for current != nil {
 		switch {
@@ -91,10 +91,10 @@ func (t *BSTree) Search(key int) (*BSTNode, error) {
 	return nil, errors.New("not found")
 }
 
-func (t *BSTree) Remove(key int) *BSTree {
+func (t *Tree) Remove(key int) *Tree {
 	// 移除节点定位
-	var findPNode func(int, *BSTNode) (*BSTNode, int)
-	findPNode = func(key int, node *BSTNode) (*BSTNode, int) {
+	var findPNode func(int, *Node) (*Node, int)
+	findPNode = func(key int, node *Node) (*Node, int) {
 		if key == node.Key {
 			return nil, 0
 		} else if node == nil {
@@ -126,8 +126,8 @@ func (t *BSTree) Remove(key int) *BSTree {
 	}
 
 	// 取出替代节点，即取出移除节点右子树中的最小值
-	var takeMin func(pNode *BSTNode, node *BSTNode, flag bool) *BSTNode
-	takeMin = func(pNode *BSTNode, node *BSTNode, flag bool) *BSTNode {
+	var takeMin func(pNode *Node, node *Node, flag bool) *Node
+	takeMin = func(pNode *Node, node *Node, flag bool) *Node {
 		if node == nil {
 			return node
 		} else if node.Left == nil {
@@ -184,11 +184,11 @@ func (t *BSTree) Remove(key int) *BSTree {
 	return t
 }
 
-func (t *BSTree) DepthFirstSearch() {
+func (t *Tree) DepthFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	stack := []BSTNode{ *t.root }
+	stack := []Node{ *t.root }
 	var stackLen uint = 1
 	entrance := stack[0]
 	for {
@@ -217,11 +217,11 @@ func (t *BSTree) DepthFirstSearch() {
 	}
 }
 
-func (t *BSTree) BroadFirstSearch() {
+func (t *Tree) BroadFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	queue := []BSTNode{ *t.root }
+	queue := []Node{ *t.root }
 	var queueLen uint = 1
 	for {
 		current := queue[0]
@@ -242,11 +242,11 @@ func (t *BSTree) BroadFirstSearch() {
 	}
 }
 
-func (t *BSTree) Print() {
+func (t *Tree) Print() {
 	toggle := 1
-	GoOn := false
-	sliceA := make([]*BSTNode, 0)
-	sliceB := make([]*BSTNode, 0)
+	ctn := false
+	sliceA := make([]*Node, 0)
+	sliceB := make([]*Node, 0)
 	strA := make([]string, 0)
 	strB := make([]string, 0)
 	lines := make([][][]string, 0)
@@ -265,7 +265,7 @@ func (t *BSTree) Print() {
 				if current.Left != nil {
 					strB = append(strB, "|" + space)
 					sliceB = append(sliceB, current.Left)
-					GoOn = true
+					ctn = true
 				} else {
 					strB = append(strB, " " + space)
 					sliceB = append(sliceB, nil)
@@ -278,7 +278,7 @@ func (t *BSTree) Print() {
 					strB = append(strB, "|")
 					strB = append(strB, " ")
 					sliceB = append(sliceB, current.Right)
-					GoOn = true
+					ctn = true
 				} else {
 					strA = append(strA, " ")
 					strB = append(strB, " ")
@@ -372,8 +372,8 @@ func (t *BSTree) Print() {
 						}
 					}
 				}
-				if GoOn {
-					GoOn = false
+				if ctn {
+					ctn = false
 					toggle *= -1
 				} else {
 					break
@@ -392,7 +392,7 @@ func (t *BSTree) Print() {
 				if current.Left != nil {
 					strB = append(strB, "|" + space)
 					sliceA = append(sliceA, current.Left)
-					GoOn = true
+					ctn = true
 				} else {
 					strB = append(strB, " " + space)
 					sliceA = append(sliceA, nil)
@@ -405,7 +405,7 @@ func (t *BSTree) Print() {
 					strB = append(strB, "|")
 					strB = append(strB, " ")
 					sliceA = append(sliceA, current.Right)
-					GoOn = true
+					ctn = true
 				} else {
 					strA = append(strA, " ")
 					strB = append(strB, " ")
@@ -499,8 +499,8 @@ func (t *BSTree) Print() {
 						}
 					}
 				}
-				if GoOn {
-					GoOn = false
+				if ctn {
+					ctn = false
 					toggle *= -1
 				} else {
 					break
@@ -517,6 +517,6 @@ func (t *BSTree) Print() {
 	}
 }
 
-func NewBSTree() *BSTree {
-	return &BSTree{}
+func NewTree() *Tree {
+	return &Tree{}
 }
