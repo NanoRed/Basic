@@ -18,7 +18,7 @@ type Tree struct {
 
 type Node struct {
 	Key int
-	Value *[]interface{}
+	Value interface{}
 	Left *Node
 	Right *Node
 }
@@ -37,22 +37,12 @@ func (t *Tree) Append(key int, val interface{}) *Tree {
 		if node == nil {
 			node = &Node{
 				Key: key,
+				Value: val,
 			}
 			t.count++
-			if val != nil {
-				tmp := make([]interface{}, 1)
-				tmp[0] = val
-				node.Value = &tmp
-			}
 			return node, true
 		} else if key == node.Key {
-			if node.Value != nil {
-				*node.Value = append(*node.Value, val)
-			} else {
-				tmp := make([]interface{}, 1)
-				tmp[0] = val
-				node.Value = &tmp
-			}
+			node.Value = val
 			return node, false
 		}
 
