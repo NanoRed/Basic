@@ -1,4 +1,4 @@
-package binary_search_tree
+package BinarySearchTree
 
 // 二叉查找树 Binary Search Tree
 
@@ -13,12 +13,12 @@ import (
 type Tree struct {
 	root *Node
 	count uint
-	height uint
 }
 
 type Node struct {
 	Key int
 	Value interface{}
+	Height uint
 	Left *Node
 	Right *Node
 }
@@ -28,39 +28,41 @@ func (t *Tree) Len() uint {
 }
 
 func (t *Tree) Height() uint {
-	return t.height
+	return t.root.Height
 }
 
 func (t *Tree) Append(key int, val interface{}) *Tree {
-	var appendNode func(int, interface{}, *Node, uint) *Node
-	appendNode = func(key int, val interface{}, node *Node, depth uint) *Node {
-		if node == nil {
-			node = &Node{
-				Key: key,
-				Value: val,
-			}
-			t.count++
-			if depth > t.height {
-				t.height = depth
-			}
-			return node
-		} else if key == node.Key {
-			node.Value = val
-			return node
-		}
-
-		if key < node.Key {
-			depth++
-			node.Left = appendNode(key, val, node.Left, depth)
-		} else {
-			depth++
-			node.Right = appendNode(key, val, node.Right, depth)
-		}
-
-		return node
+	if t.root.update(key, val) {
+		t.count++
 	}
-	t.root = appendNode(key, val, t.root, 1)
 	return t
+}
+
+func (n *Node) update(key int, val interface{}) (countAdd bool) {
+	if n == nil {
+		n = &Node{
+			Key: key,
+			Value: val,
+			Height: 1,
+		}
+		countAdd = true
+		return
+	} else if key == n.Key {
+		n.Value = val
+		return
+	}
+	if key < n.Key {
+		countAdd = n.Left.update(key, val)
+		if n.Left.Height == n.Height {
+			n.Height++
+		}
+	} else {
+		countAdd = n.Right.update(key, val)
+		if n.Right.Height == n.Height {
+			n.Height++
+		}
+	}
+	return
 }
 
 func (t *Tree) Search(key int) (*Node, error) {
@@ -78,100 +80,99 @@ func (t *Tree) Search(key int) (*Node, error) {
 	return nil, errors.New("not found")
 }
 
+type SIDE int
+
+const (
+	locatedAtNoWhere SIDE = iota
+	locatedAtItself
+	locatedAtLeft
+	locatedAtRight
+)
+
 func (t *Tree) Remove(key int) *Tree {
-	// 移除节点定位
-	var findPNode func(int, *Node) (*Node, int)
-	findPNode = func(key int, node *Node) (*Node, int) {
-		if key == node.Key {
-			return nil, 0
-		} else if node == nil {
-			return nil, -1
-		}
-		var record int // 1代表要移除的节点为返回节点的左子节点，2反之，-1代表没找到
-		if key < node.Key {
-			tmp, tmp2 := findPNode(key, node.Left)
-			if tmp != nil {
-				node = tmp
-			}
-			if tmp2 == 0 {
-				record = 1
-			} else {
-				record = tmp2
-			}
-		} else if key > node.Key {
-			tmp, tmp2 := findPNode(key, node.Right)
-			if tmp != nil {
-				node = tmp
-			}
-			if tmp2 == 0 {
-				record = 2
-			} else {
-				record = tmp2
-			}
-		}
-		return node, record
-	}
-
-	// 取出替代节点，即取出移除节点右子树中的最小值
-	var takeMin func(pNode *Node, node *Node, flag bool) *Node
-	takeMin = func(pNode *Node, node *Node, flag bool) *Node {
-		if node == nil {
-			return node
-		} else if node.Left == nil {
-			if flag { // 函数调用时，flag恒传true，即初次为true
-				pNode.Right = node.Right
-			} else {
-				pNode.Left = node.Right
-			}
-			return node
-		}
-		node = takeMin(node, node.Left, false)
-		return node
-	}
-
-	// 移除节点
-	node, record := findPNode(key, t.root)
-	switch record {
-	case -1:
-		return t
-	case 0:
-		takeMinNode := takeMin(t.root, t.root.Right, true)
-		if takeMinNode == nil {
+	parentNode, side := t.root.findParent(key)
+	switch side {
+	case locatedAtItself:
+		replacement := t.root.takeOutReplacement()
+		if replacement == nil {
 			t.root = t.root.Left
 		} else {
-			takeMinNode.Left = t.root.Left
-			takeMinNode.Right = t.root.Right
-			t.root = takeMinNode
+			replacement.Left, replacement.Right = t.root.Left, t.root.Right
+			t.root = replacement
 		}
 		t.count--
-	case 1:
-		takeMinNode := takeMin(node.Left, node.Left.Right, true)
-		if takeMinNode == nil {
-			node.Left = node.Left.Left
+	case locatedAtLeft:
+		replacement := parentNode.Left.takeOutReplacement()
+		if replacement == nil {
+			parentNode.Left = parentNode.Left.Left
 		} else {
-			takeMinNode.Left = node.Left.Left
-			takeMinNode.Right = node.Left.Right
-			node.Left = takeMinNode
+			replacement.Left, replacement.Right = parentNode.Left.Left, parentNode.Left.Right
+			parentNode.Left = replacement
 		}
 		t.count--
-	case 2:
-		takeMinNode := takeMin(node.Right, node.Right.Right, true)
-		if takeMinNode == nil {
-			node.Right = node.Right.Left
+	case locatedAtRight:
+		replacement := parentNode.Right.takeOutReplacement()
+		if replacement == nil {
+			parentNode.Right = parentNode.Right.Left
 		} else {
-			takeMinNode.Left = node.Right.Left
-			takeMinNode.Right = node.Right.Right
-			node.Right = takeMinNode
+			replacement.Left, replacement.Right = parentNode.Right.Left, parentNode.Right.Right
+			parentNode.Right = replacement
 		}
 		t.count--
-	default:
-		panic("unknown")
 	}
-
 	return t
 }
 
-func (t *Tree) DepthFirstSearch() {
+// 移除节点定位，找出节点是父节点的那一边子节点
+func (n *Node) findParent(key int) (parentNode *Node, side SIDE) {
+	if key == n.Key {
+		side = locatedAtItself
+		return
+	} else if n == nil {
+		side = locatedAtNoWhere
+		return
+	}
+	if key < n.Key {
+		if parentNode, side = n.Left.findParent(key); side == locatedAtItself {
+			parentNode = n
+			side = locatedAtLeft
+		}
+	} else {
+		if parentNode, side = n.Right.findParent(key); side == locatedAtItself {
+			parentNode = n
+			side = locatedAtRight
+		}
+	}
+	return
+}
+
+// 取出替代节点，即取出待替换节点右树最大值
+func (n *Node) takeOutReplacement(params... interface{}) (replacementNode *Node) {
+	if len(params) == 0 {
+		// 非递归逻辑（最表层调用）
+		params = append(params, true)
+		replacementNode = n.Right
+		if replacementNode == nil {
+			return
+		} else if replacementNode.Left == nil {
+			n.Right = replacementNode.Right
+			return
+		}
+	} else {
+		// 递归逻辑
+		replacementNode = n.Left
+		if replacementNode == nil {
+			return
+		} else if replacementNode.Left == nil {
+			n.Left = replacementNode.Right
+			return
+		}
+	}
+	replacementNode = replacementNode.takeOutReplacement(params...)
+	return
+}
+
+func (t *Tree) DepthFirstTraverse() {
 	if t.root == nil {
 		return
 	}
@@ -204,7 +205,7 @@ func (t *Tree) DepthFirstSearch() {
 	}
 }
 
-func (t *Tree) BroadFirstSearch() {
+func (t *Tree) BroadFirstTraverse() {
 	if t.root == nil {
 		return
 	}

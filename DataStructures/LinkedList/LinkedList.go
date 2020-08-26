@@ -1,4 +1,4 @@
-package linked_list
+package LinkedList
 
 // 单向链表 Linked List
 

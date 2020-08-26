@@ -1,8 +1,8 @@
-package shell_sort
+package ShellSort
 
 // 希尔排序 Shell Sort
 
-func ShellSort(arr *[]int) {
+func Sort(arr *[]int) {
 	count := len(*arr)
 	gap := count/2
 	for {

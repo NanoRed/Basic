@@ -1,8 +1,8 @@
-package quick_sort
+package QuickSort
 
 // 快速排序 Quick Sort
 
-func QuickSort(arr *[]int) {
+func Sort(arr *[]int) {
 	section := make([][]int, 0)
 	section = append(section, []int{1, len(*arr) - 1})
 	for {
