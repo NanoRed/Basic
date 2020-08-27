@@ -1,4 +1,4 @@
-package LinkedList
+package linkedlist
 
 // 单向链表 Linked List
 
@@ -7,24 +7,31 @@ import (
 	"fmt"
 )
 
+// List list structure
 type List struct {
 	head, tail, current *Node
-	length uint
+	length              uint
 }
 
+// Node list node structure
 type Node struct {
 	Value interface{}
-	Next *Node
+	Next  *Node
 }
 
+// Len total count of the list nodes
 func (l *List) Len() uint {
 	return l.length
 }
 
+// Reset reset the current node to head node
 func (l *List) Reset() {
 	l.current = l.head
 }
 
+// Range traverse the list, one called return one node
+// it returns a node pointer
+// and a boolean data which means whether it reachs to the end
 func (l *List) Range() (*Node, bool) {
 	r := l.current
 	ctn := true
@@ -39,6 +46,7 @@ func (l *List) Range() (*Node, bool) {
 	return r, ctn
 }
 
+// Search search node from the list with index
 func (l *List) Search(index uint) (n *Node, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
@@ -69,6 +77,7 @@ func (l *List) Search(index uint) (n *Node, err error) {
 	return
 }
 
+// Append append a new node to the list
 func (l *List) Append(val interface{}) *List {
 	if l.tail == nil {
 		l.head = &Node{
@@ -77,7 +86,7 @@ func (l *List) Append(val interface{}) *List {
 		l.tail = l.head
 		l.current = l.head
 	} else {
-		l.tail.Next = &Node {
+		l.tail.Next = &Node{
 			Value: val,
 		}
 		l.tail = l.tail.Next
@@ -86,6 +95,7 @@ func (l *List) Append(val interface{}) *List {
 	return l
 }
 
+// Insert insert a node to pecific location of the list
 func (l *List) Insert(val interface{}, index uint) *List {
 	node := &Node{
 		Value: val,
@@ -109,6 +119,7 @@ func (l *List) Insert(val interface{}, index uint) *List {
 	return l
 }
 
+// Remove remove a pecific node from the list
 func (l *List) Remove(index uint) *List {
 	switch {
 	case index == 0:
@@ -134,6 +145,7 @@ func (l *List) Remove(index uint) *List {
 	return l
 }
 
+// Reverse reverse the list
 func (l *List) Reverse() *List {
 	l.Reset()
 	var prevNode *Node
@@ -150,6 +162,7 @@ func (l *List) Reverse() *List {
 	return l
 }
 
+// Slice return the slice format data of the list
 func (l *List) Slice() []interface{} {
 	s := make([]interface{}, l.length)
 	var i uint
@@ -162,10 +175,12 @@ func (l *List) Slice() []interface{} {
 	return s
 }
 
+// Print print the list
 func (l *List) Print() {
 	fmt.Println(l.Slice())
 }
 
+// NewList create a new list object
 func NewList() *List {
 	return &List{}
 }

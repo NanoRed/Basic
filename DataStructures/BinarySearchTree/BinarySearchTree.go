@@ -1,70 +1,74 @@
-package BinarySearchTree
+package binarysearchtree
 
 // 二叉查找树 Binary Search Tree
 
 import (
 	"errors"
 	"fmt"
-	"regexp"
-	"strconv"
 	"strings"
 )
 
+// Tree tree structure
 type Tree struct {
-	root *Node
+	root  *Node
 	count uint
 }
 
+// Node tree node structure
 type Node struct {
-	Key int
-	Value interface{}
+	Key    int
+	Value  interface{}
 	Height uint
-	Left *Node
-	Right *Node
+	Left   *Node
+	Right  *Node
 }
 
+// Len total count of the tree nodes
 func (t *Tree) Len() uint {
 	return t.count
 }
 
+// Height tree height
 func (t *Tree) Height() uint {
 	return t.root.Height
 }
 
+// Append append a new node to the tree
 func (t *Tree) Append(key int, val interface{}) *Tree {
-	if t.root.update(key, val) {
+	if update(&t.root, key, val) {
 		t.count++
 	}
 	return t
 }
 
-func (n *Node) update(key int, val interface{}) (countAdd bool) {
-	if n == nil {
-		n = &Node{
-			Key: key,
-			Value: val,
+func update(node **Node, key int, val interface{}) (countAdd bool) {
+	if *node == nil {
+		*node = &Node{
+			Key:    key,
+			Value:  val,
 			Height: 1,
 		}
 		countAdd = true
 		return
-	} else if key == n.Key {
-		n.Value = val
+	} else if key == (*node).Key {
+		(*node).Value = val
 		return
 	}
-	if key < n.Key {
-		countAdd = n.Left.update(key, val)
-		if n.Left.Height == n.Height {
-			n.Height++
+	if key < (*node).Key {
+		countAdd = update(&(*node).Left, key, val)
+		if (*node).Left.Height == (*node).Height {
+			(*node).Height++
 		}
 	} else {
-		countAdd = n.Right.update(key, val)
-		if n.Right.Height == n.Height {
-			n.Height++
+		countAdd = update(&(*node).Right, key, val)
+		if (*node).Right.Height == (*node).Height {
+			(*node).Height++
 		}
 	}
 	return
 }
 
+// Search search node from the tree with key
 func (t *Tree) Search(key int) (*Node, error) {
 	current := t.root
 	for current != nil {
@@ -80,24 +84,25 @@ func (t *Tree) Search(key int) (*Node, error) {
 	return nil, errors.New("not found")
 }
 
-type SIDE int
+type side int
 
 const (
-	locatedAtNoWhere SIDE = iota
+	locatedAtNoWhere side = iota
 	locatedAtItself
 	locatedAtLeft
 	locatedAtRight
 )
 
+// Remove remove a pecific node from the tree
 func (t *Tree) Remove(key int) *Tree {
-	parentNode, side := t.root.findParent(key)
+	parentNode, side, path := t.root.findParent(key)
 	switch side {
 	case locatedAtItself:
 		replacement := t.root.takeOutReplacement()
 		if replacement == nil {
 			t.root = t.root.Left
 		} else {
-			replacement.Left, replacement.Right = t.root.Left, t.root.Right
+			replacement.Left, replacement.Right, replacement.Height = t.root.Left, t.root.Right, t.root.Height
 			t.root = replacement
 		}
 		t.count--
@@ -106,8 +111,11 @@ func (t *Tree) Remove(key int) *Tree {
 		if replacement == nil {
 			parentNode.Left = parentNode.Left.Left
 		} else {
-			replacement.Left, replacement.Right = parentNode.Left.Left, parentNode.Left.Right
+			replacement.Left, replacement.Right, replacement.Height = parentNode.Left.Left, parentNode.Left.Right, parentNode.Left.Height
 			parentNode.Left = replacement
+		}
+		for _, val := range path {
+			val.correctHeight()
 		}
 		t.count--
 	case locatedAtRight:
@@ -115,16 +123,21 @@ func (t *Tree) Remove(key int) *Tree {
 		if replacement == nil {
 			parentNode.Right = parentNode.Right.Left
 		} else {
-			replacement.Left, replacement.Right = parentNode.Right.Left, parentNode.Right.Right
+			replacement.Left, replacement.Right, replacement.Height = parentNode.Right.Left, parentNode.Right.Right, parentNode.Right.Height
 			parentNode.Right = replacement
+		}
+		for _, val := range path {
+			val.correctHeight()
 		}
 		t.count--
 	}
 	return t
 }
 
-// 移除节点定位，找出节点是父节点的那一边子节点
-func (n *Node) findParent(key int) (parentNode *Node, side SIDE) {
+// locate the parent node of the node to be removed
+// side means the node to be removed is in *side* side of the returned parent node
+// path means the path from the returned parent node to the root node
+func (n *Node) findParent(key int) (parentNode *Node, side side, path []*Node) {
 	if key == n.Key {
 		side = locatedAtItself
 		return
@@ -133,50 +146,71 @@ func (n *Node) findParent(key int) (parentNode *Node, side SIDE) {
 		return
 	}
 	if key < n.Key {
-		if parentNode, side = n.Left.findParent(key); side == locatedAtItself {
+		if parentNode, side, path = n.Left.findParent(key); side == locatedAtItself {
 			parentNode = n
 			side = locatedAtLeft
+			path = []*Node{n}
+		} else {
+			path = append(path, n)
 		}
 	} else {
-		if parentNode, side = n.Right.findParent(key); side == locatedAtItself {
+		if parentNode, side, path = n.Right.findParent(key); side == locatedAtItself {
 			parentNode = n
 			side = locatedAtRight
+			path = []*Node{n}
+		} else {
+			path = append(path, n)
 		}
 	}
 	return
 }
 
-// 取出替代节点，即取出待替换节点右树最大值
-func (n *Node) takeOutReplacement(params... interface{}) (replacementNode *Node) {
+// find and take out the replacement node
+// which is the largest node of the right subtree of the node to be removed
+func (n *Node) takeOutReplacement(params ...interface{}) (replacementNode *Node) {
 	if len(params) == 0 {
-		// 非递归逻辑（最表层调用）
+		// non-recursive logic
 		params = append(params, true)
 		replacementNode = n.Right
 		if replacementNode == nil {
 			return
 		} else if replacementNode.Left == nil {
 			n.Right = replacementNode.Right
+			n.correctHeight()
 			return
 		}
 	} else {
-		// 递归逻辑
+		// the recursive part
 		replacementNode = n.Left
-		if replacementNode == nil {
-			return
-		} else if replacementNode.Left == nil {
+		if replacementNode.Left == nil {
 			n.Left = replacementNode.Right
+			n.correctHeight()
 			return
 		}
 	}
 	replacementNode = replacementNode.takeOutReplacement(params...)
+	n.correctHeight()
 	return
 }
 
-func (t *Tree) DepthFirstTraverse() {
+func (n *Node) correctHeight() {
+	n.Height = 0
+	if n.Left != nil {
+		n.Height = n.Left.Height
+	}
+	if n.Right != nil && n.Right.Height > n.Height {
+		n.Height = n.Right.Height
+	}
+	n.Height++
+	return
+}
+
+// DepthFirstSearch depth first search
+func (t *Tree) DepthFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	stack := []Node{ *t.root }
+	stack := []Node{*t.root}
 	var stackLen uint = 1
 	entrance := stack[0]
 	for {
@@ -205,11 +239,12 @@ func (t *Tree) DepthFirstTraverse() {
 	}
 }
 
-func (t *Tree) BroadFirstTraverse() {
+// BroadFirstSearch broad first search
+func (t *Tree) BroadFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	queue := []Node{ *t.root }
+	queue := []Node{*t.root}
 	var queueLen uint = 1
 	for {
 		current := queue[0]
@@ -230,281 +265,181 @@ func (t *Tree) BroadFirstTraverse() {
 	}
 }
 
-func (t *Tree) Print() {
-	toggle := 1
-	ctn := false
-	sliceA := make([]*Node, 0)
-	sliceB := make([]*Node, 0)
-	strA := make([]string, 0)
-	strB := make([]string, 0)
-	lines := make([][][]string, 0)
-	sliceA = append(sliceA, t.root)
-	for {
-		if toggle == 1 {
-			current := sliceA[0]
-			sliceA = sliceA[1:]
-			if current != nil {
-				v := strconv.Itoa(current.Key)
-				space := ""
-				for i := len(v); i > 1; i-- {
-					space += " "
+// Sprint print the tree data into a return variable
+func (t *Tree) Sprint() (content string) {
+	if t.root == nil {
+		return
+	}
+	type nodeInfo struct {
+		node       *Node
+		layer      int
+		count      int
+		index      int
+		len        int
+		str        string
+		leftNode   *nodeInfo
+		rightNode  *nodeInfo
+		parentNode *nodeInfo
+	}
+	layer := make([][]*nodeInfo, 0)
+	first := &nodeInfo{
+		node:  t.root,
+		layer: 1,
+		count: 1,
+		str:   fmt.Sprintf("%d(h:%d)", t.root.Key, t.root.Height),
+	}
+	first.len = len(first.str)
+	queue := []*nodeInfo{first}
+	currentLayer := 2
+	currentIndex := 0
+	currentCount := 1
+	for i := 0; i < int(t.count); i++ {
+		current := queue[i]
+		if current.node.Left != nil {
+			left := &nodeInfo{
+				node:       current.node.Left,
+				layer:      current.layer + 1,
+				str:        fmt.Sprintf("%d(h:%d)", current.node.Left.Key, current.node.Left.Height),
+				parentNode: current,
+			}
+			left.len = len(left.str)
+			if left.layer != currentLayer {
+				currentLayer = left.layer
+				currentIndex = 0
+				currentCount = 1
+			}
+			left.count = currentCount
+			currentCount++
+			left.index = currentIndex
+			currentIndex += left.len + 1
+			queue = append(queue, left)
+			current.leftNode = left
+		}
+		if current.node.Right != nil {
+			right := &nodeInfo{
+				node:       current.node.Right,
+				layer:      current.layer + 1,
+				str:        fmt.Sprintf("%d(h:%d)", current.node.Right.Key, current.node.Right.Height),
+				parentNode: current,
+			}
+			right.len = len(right.str)
+			if right.layer != currentLayer {
+				currentLayer = right.layer
+				currentIndex = 0
+				currentCount = 1
+			}
+			right.count = currentCount
+			currentCount++
+			right.index = currentIndex
+			currentIndex += right.len + 1
+			queue = append(queue, right)
+			current.rightNode = right
+		}
+		if current.layer > len(layer) {
+			layer = append(layer, make([]*nodeInfo, 0))
+		}
+		layer[current.layer-1] = append(layer[current.layer-1], current)
+	}
+	var alignLeft func(*nodeInfo)
+	var alignRight func(*nodeInfo)
+	alignLeft = func(current *nodeInfo) {
+		if current.leftNode == nil {
+			return
+		} else if val := current.index - current.leftNode.index; val > 0 { // 下一层移位
+			for k := current.leftNode.count - 1; k < len(layer[current.layer]); k++ {
+				layer[current.layer][k].index += val
+			}
+		} else if val < 0 { // 本层移位
+			for k := current.count - 1; k < len(layer[current.layer-1]); k++ {
+				layer[current.layer-1][k].index += -val
+			}
+		}
+		for j := current.leftNode.count - 1; j < len(layer[current.layer]); j++ {
+			alignLeft(layer[current.layer][j])
+			alignRight(layer[current.layer][j])
+		}
+	}
+	alignRight = func(current *nodeInfo) {
+		if current.rightNode == nil {
+			return
+		} else if !strings.Contains(current.str, "-+") {
+			if val := current.rightNode.index - current.index - current.len; val > 0 {
+				tmp := ""
+				for k := 0; k < val; k++ {
+					tmp += "-"
 				}
-				strA = append(strA, v)
-				if current.Left != nil {
-					strB = append(strB, "|" + space)
-					sliceB = append(sliceB, current.Left)
-					ctn = true
-				} else {
-					strB = append(strB, " " + space)
-					sliceB = append(sliceB, nil)
-				}
-				if current.Right != nil {
-					strA = append(strA, "=")
-					strB = append(strB, " ")
-					strA = append(strA, "+")
-					strA = append(strA, " ")
-					strB = append(strB, "|")
-					strB = append(strB, " ")
-					sliceB = append(sliceB, current.Right)
-					ctn = true
-				} else {
-					strA = append(strA, " ")
-					strB = append(strB, " ")
-					sliceB = append(sliceB, nil)
+				tmp += "+"
+				current.str += tmp
+				newLen := len(current.str)
+				offset := newLen - current.len
+				current.len = newLen
+				for k := current.count; k < len(layer[current.layer-1]); k++ {
+					layer[current.layer-1][k].index += offset
 				}
 			} else {
-				sliceB = append(sliceB, nil, nil)
-			}
-			if len(sliceA) == 0 {
-				strG := make([][]string, 0)
-				strG = append(strG, strA, strB)
-				strA = make([]string, 0)
-				strB = make([]string, 0)
-				lines = append(lines, strG)
-				c := len(lines)
-				PrintMethodGoBackA:
-				if c > 1 {
-					tmp := strings.Join(lines[c-2][1], "")
-					n := -1
-					cPos := 0
-					for {
-						var pos int
-						tmpPos := strings.Index(tmp, "|")
-						if tmpPos == -1 {
-							break
-						} else {
-							tmp = tmp[tmpPos+1:]
-							cPos += tmpPos + 1
-							pos = cPos - 1
-							n++
-						}
-						var index []int
-						for i, v := range lines[c-1][0] {
-							match, _ := regexp.MatchString(`^\d+$`, v)
-							if match {
-								index = append(index, i)
-							}
-						}
-						front := strings.Join(lines[c-1][0][:index[n]], "")
-						pos2 := len(front)
-						if pos > pos2 {
-							blank := ""
-							for i := 0; i < pos - pos2; i++ {
-								blank += " "
-							}
-							lines[c-1][0] = append(
-								lines[c-1][0][:index[n]],
-								append(
-									[]string{blank},
-									lines[c-1][0][index[n]:]...
-								)...
-							)
-							lines[c-1][1] = append(
-								lines[c-1][1][:index[n]],
-								append(
-									[]string{blank},
-									lines[c-1][1][index[n]:]...
-								)...
-							)
-						} else if pos < pos2 {
-							blank := ""
-							for i := 0; i < pos2 - pos; i++ {
-								blank += " "
-							}
-							var index2 []int
-							for i, v := range lines[c-2][1] {
-								if v[0:1] == "|" {
-									index2 = append(index2, i)
-								}
-							}
-							lines[c-2][1] = append(
-								lines[c-2][1][:index2[n]],
-								append([]string{blank}, lines[c-2][1][index2[n]:]...)...
-							)
-							if lines[c-2][0][index2[n]][0:1] == "+" {
-								lines[c-2][0] = append(
-									lines[c-2][0][:index2[n]],
-									append(
-										[]string{strings.ReplaceAll(blank, " ", "=")},
-										lines[c-2][0][index2[n]:]...
-									)...
-								)
-							} else {
-								lines[c-2][0] = append(
-									lines[c-2][0][:index2[n]],
-									append([]string{blank}, lines[c-2][0][index2[n]:]...)...
-								)
-							}
-							c--
-							goto PrintMethodGoBackA
-						}
-					}
+				tmp := "-+"
+				current.str += tmp
+				newLen := len(current.str)
+				offset := newLen - current.len
+				current.len = newLen
+				for k := current.count; k < len(layer[current.layer-1]); k++ {
+					layer[current.layer-1][k].index += offset
 				}
-				if ctn {
-					ctn = false
-					toggle *= -1
-				} else {
-					break
+				offset2 := -val + 1
+				for k := current.rightNode.count - 1; k < len(layer[current.layer]); k++ {
+					layer[current.layer][k].index += offset2
 				}
 			}
 		} else {
-			current := sliceB[0]
-			sliceB = sliceB[1:]
-			if current != nil {
-				v := strconv.Itoa(current.Key)
-				space := ""
-				for i := len(v); i > 1; i-- {
-					space += " "
-				}
-				strA = append(strA, v)
-				if current.Left != nil {
-					strB = append(strB, "|" + space)
-					sliceA = append(sliceA, current.Left)
-					ctn = true
-				} else {
-					strB = append(strB, " " + space)
-					sliceA = append(sliceA, nil)
-				}
-				if current.Right != nil {
-					strA = append(strA, "=")
-					strB = append(strB, " ")
-					strA = append(strA, "+")
-					strA = append(strA, " ")
-					strB = append(strB, "|")
-					strB = append(strB, " ")
-					sliceA = append(sliceA, current.Right)
-					ctn = true
-				} else {
-					strA = append(strA, " ")
-					strB = append(strB, " ")
-					sliceA = append(sliceA, nil)
-				}
-			} else {
-				sliceA = append(sliceA, nil, nil)
-			}
-			if len(sliceB) == 0 {
-				strG := make([][]string, 0)
-				strG = append(strG, strA, strB)
-				strA = make([]string, 0)
-				strB = make([]string, 0)
-				lines = append(lines, strG)
-				c := len(lines)
-				PrintMethodGoBackB:
-				if c > 1 {
-					tmp := strings.Join(lines[c-2][1], "")
-					n := -1
-					cPos := 0
-					for {
-						var pos int
-						tmpPos := strings.Index(tmp, "|")
-						if tmpPos == -1 {
-							break
-						} else {
-							tmp = tmp[tmpPos+1:]
-							cPos += tmpPos + 1
-							pos = cPos - 1
-							n++
-						}
-						var index []int
-						for i, v := range lines[c-1][0] {
-							match, _ := regexp.MatchString(`^\d+$`, v)
-							if match {
-								index = append(index, i)
-							}
-						}
-						front := strings.Join(lines[c-1][0][:index[n]], "")
-						pos2 := len(front)
-						if pos > pos2 {
-							blank := ""
-							for i := 0; i < pos - pos2; i++ {
-								blank += " "
-							}
-							lines[c-1][0] = append(
-								lines[c-1][0][:index[n]],
-								append(
-									[]string{blank},
-									lines[c-1][0][index[n]:]...
-								)...
-							)
-							lines[c-1][1] = append(
-								lines[c-1][1][:index[n]],
-								append(
-									[]string{blank},
-									lines[c-1][1][index[n]:]...
-								)...
-							)
-						} else if pos < pos2 {
-							blank := ""
-							for i := 0; i < pos2 - pos; i++ {
-								blank += " "
-							}
-							var index2 []int
-							for i, v := range lines[c-2][1] {
-								if v[0:1] == "|" {
-									index2 = append(index2, i)
-								}
-							}
-							lines[c-2][1] = append(
-								lines[c-2][1][:index2[n]],
-								append([]string{blank}, lines[c-2][1][index2[n]:]...)...
-							)
-							if lines[c-2][0][index2[n]][0:1] == "+" {
-								lines[c-2][0] = append(
-									lines[c-2][0][:index2[n]],
-									append(
-										[]string{strings.ReplaceAll(blank, " ", "=")},
-										lines[c-2][0][index2[n]:]...
-									)...
-								)
-							} else {
-								lines[c-2][0] = append(
-									lines[c-2][0][:index2[n]],
-									append([]string{blank}, lines[c-2][0][index2[n]:]...)...
-								)
-							}
-							c--
-							goto PrintMethodGoBackB
-						}
-					}
-				}
-				if ctn {
-					ctn = false
-					toggle *= -1
-				} else {
-					break
-				}
+			for k := current.rightNode.count - 1; k < len(layer[current.layer]); k++ {
+				layer[current.layer][k].index += current.index + current.len - 1 - current.rightNode.index
 			}
 		}
+		for j := current.rightNode.count - 1; j < len(layer[current.layer]); j++ {
+			alignLeft(layer[current.layer][j])
+			alignRight(layer[current.layer][j])
+		}
 	}
-	for i := 0; i < len(lines); i++ {
-		rowA := strings.Join(lines[i][0], "")
-		rowA = strings.ReplaceAll(rowA, "=", "─")
-		rowA = strings.ReplaceAll(rowA, "+", "┐")
-		rowB := strings.Join(lines[i][1], "")
-		fmt.Println(rowA + "\n" + rowB)
+	for i := len(layer) - 2; i >= 0; i-- {
+		for j := 0; j < len(layer[i]); j++ {
+			alignLeft(layer[i][j])
+			alignRight(layer[i][j])
+		}
 	}
+	for i := 0; i < len(layer); i++ {
+		line1 := ""
+		line2 := ""
+		for j := 0; j < len(layer[i]); j++ {
+			if val := layer[i][j].index - len(line1); val > 0 {
+				for k := 0; k < val; k++ {
+					line1 += " "
+					line2 += " "
+				}
+			}
+			line1 += layer[i][j].str
+			if layer[i][j].leftNode != nil {
+				line2 += "|"
+			} else {
+				line2 += " "
+			}
+			for k := 0; k < layer[i][j].len-2; k++ {
+				line2 += " "
+			}
+			if layer[i][j].rightNode != nil {
+				line2 += "|"
+			} else {
+				line2 += " "
+			}
+		}
+		line1 = strings.ReplaceAll(line1, "-", "─")
+		line1 = strings.ReplaceAll(line1, "+", "┐")
+		content += line1 + "\n"
+		content += line2 + "\n"
+	}
+	return
 }
 
+// NewTree create a new tree object
 func NewTree() *Tree {
 	return &Tree{}
 }

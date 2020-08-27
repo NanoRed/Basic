@@ -1,27 +1,30 @@
-package AVLTree
+package avltree
 
 // AVL树（平衡二叉搜索树） AVL Tree
 
+// Tree tree structure
 type Tree struct {
-	root *Node
+	root  *Node
 	count uint
 }
 
+// Node tree node structure
 type Node struct {
-	Key int
-	Value interface{}
+	Key    int
+	Value  interface{}
 	Height uint
-	Left *Node
-	Right *Node
+	Left   *Node
+	Right  *Node
 }
 
+// Append append a new node to the tree
 func (t *Tree) Append(key int, val interface{}) *Tree {
 	var appendNode func(int, interface{}, *Node) *Node
 	appendNode = func(key int, val interface{}, node *Node) *Node {
 		if node == nil {
 			node = &Node{
-				Key: key,
-				Value: val,
+				Key:    key,
+				Value:  val,
 				Height: 1,
 			}
 			t.count++
@@ -55,8 +58,7 @@ func (t *Tree) Append(key int, val interface{}) *Tree {
 
 func (n *Node) isBalanced() bool {
 	if n.Left.Height > n.Right.Height {
-		return n.Left.Height - n.Right.Height < 2
-	} else {
-		return n.Right.Height - n.Left.Height < 2
+		return n.Left.Height-n.Right.Height < 2
 	}
+	return n.Right.Height-n.Left.Height < 2
 }

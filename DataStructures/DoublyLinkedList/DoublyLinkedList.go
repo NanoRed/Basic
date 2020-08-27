@@ -1,4 +1,4 @@
-package DoublyLinkedList
+package doublylinkedlist
 
 // 双向链表 Doubly Linked List
 
@@ -8,36 +8,48 @@ import (
 	"math"
 )
 
+// Direction list operating direction
 type Direction int
 
 const (
+	// FromHead do something with the list from head to the tail
 	FromHead Direction = iota
+	// FromTail same from tail to the head
 	FromTail
 )
 
+// List list structure
 type List struct {
 	head, tail, current *Node
-	length uint
+	length              uint
 }
 
+// Node list node structure
 type Node struct {
 	Value interface{}
-	Prev *Node
-	Next *Node
+	Prev  *Node
+	Next  *Node
 }
 
+// Len total count of the list nodes
 func (l *List) Len() uint {
 	return l.length
 }
 
+// Reset reset the current node to head node
 func (l *List) Reset() {
 	l.current = l.head
 }
 
+// End set the current node to tail node
 func (l *List) End() {
 	l.current = l.tail
 }
 
+// Range traverse the list, one called return one node
+// param d means traversal direction
+// it returns a node pointer
+// and a boolean data which means whether it reachs to the end
 func (l *List) Range(d Direction) (*Node, bool) {
 	r := l.current
 	ctn := true
@@ -64,6 +76,7 @@ func (l *List) Range(d Direction) (*Node, bool) {
 	return r, ctn
 }
 
+// Search search node from the list with index
 func (l *List) Search(index int) (n *Node, err error) {
 	if l.length == 0 {
 		err = errors.New("the list is empty")
@@ -116,6 +129,7 @@ func (l *List) Search(index int) (n *Node, err error) {
 	return
 }
 
+// Append append a new node to the list
 func (l *List) Append(val interface{}) *List {
 	if l.tail == nil {
 		l.head = &Node{
@@ -124,9 +138,9 @@ func (l *List) Append(val interface{}) *List {
 		l.tail = l.head
 		l.current = l.head
 	} else {
-		l.tail.Next = &Node {
+		l.tail.Next = &Node{
 			Value: val,
-			Prev: l.tail,
+			Prev:  l.tail,
 		}
 		l.tail = l.tail.Next
 	}
@@ -134,6 +148,7 @@ func (l *List) Append(val interface{}) *List {
 	return l
 }
 
+// Insert insert a node to pecific location of the list
 func (l *List) Insert(val interface{}, index int) *List {
 	node := &Node{
 		Value: val,
@@ -162,6 +177,7 @@ func (l *List) Insert(val interface{}, index int) *List {
 	return l
 }
 
+// Remove remove a pecific node from the list
 func (l *List) Remove(index int) *List {
 	rNode, err := l.Search(index)
 	if err != nil {
@@ -182,6 +198,7 @@ func (l *List) Remove(index int) *List {
 	return l
 }
 
+// Slice return the slice format data of the list
 func (l *List) Slice() []interface{} {
 	s := make([]interface{}, l.length)
 	var i uint
@@ -194,10 +211,12 @@ func (l *List) Slice() []interface{} {
 	return s
 }
 
+// Print print the list
 func (l *List) Print() {
 	fmt.Println(l.Slice())
 }
 
+// NewList create a new list object
 func NewList() *List {
 	return &List{}
 }

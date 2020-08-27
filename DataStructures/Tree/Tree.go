@@ -1,23 +1,27 @@
-package Tree
+package tree
 
 // 树 Tree
 
 import "fmt"
 
+// Tree tree structure
 type Tree struct {
-	root *Node
+	root  *Node
 	count uint
 }
 
+// Node tree node structure
 type Node struct {
 	Value interface{}
 	Child []*Node
 }
 
+// Len total count of the tree nodes
 func (t *Tree) Len() uint {
 	return t.count
 }
 
+// Append append a new node to the tree
 func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 	if index == nil {
 		t.root = &Node{
@@ -37,6 +41,7 @@ func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 	return t
 }
 
+// Remove remove a pecific node from the tree
 func (t *Tree) Remove(index *[]int) *Tree {
 	if index == nil {
 		t.root = nil
@@ -46,7 +51,7 @@ func (t *Tree) Remove(index *[]int) *Tree {
 	node := t.root
 	count := len(*index)
 	for i := 0; i < count; i++ {
-		if i == count - 1 {
+		if i == count-1 {
 			node.Child = append(node.Child[:(*index)[i]], node.Child[(*index)[i]+1:]...)
 			break
 		}
@@ -55,6 +60,7 @@ func (t *Tree) Remove(index *[]int) *Tree {
 	return t
 }
 
+// DLR pre-order traversal
 func (t *Tree) DLR() {
 	if t.root == nil {
 		return
@@ -69,6 +75,7 @@ func (t *Tree) DLR() {
 	f(t.root)
 }
 
+// LRD post-order traversal
 func (t *Tree) LRD() {
 	if t.root == nil {
 		return
@@ -83,11 +90,12 @@ func (t *Tree) LRD() {
 	f(t.root)
 }
 
+// DepthFirstSearch depth first search
 func (t *Tree) DepthFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	stack := []Node{ *t.root }
+	stack := []Node{*t.root}
 	fmt.Println(stack[0].Value)
 	for {
 		if len(stack) == 0 {
@@ -99,17 +107,18 @@ func (t *Tree) DepthFirstSearch() {
 				stack[0].Child = stack[0].Child[1:]
 			}
 		} else {
-			stack = append([]Node{ *stack[0].Child[0] }, stack...)
+			stack = append([]Node{*stack[0].Child[0]}, stack...)
 			fmt.Println(stack[0].Value)
 		}
 	}
 }
 
+// BroadFirstSearch broad first search
 func (t *Tree) BroadFirstSearch() {
 	if t.root == nil {
 		return
 	}
-	queue := []*Node{ t.root }
+	queue := []*Node{t.root}
 	queueLen := 1
 	for queueLen > 0 {
 		current := queue[0]
@@ -124,6 +133,7 @@ func (t *Tree) BroadFirstSearch() {
 	}
 }
 
+// NewTree create a new tree object
 func NewTree() *Tree {
 	return &Tree{}
 }
