@@ -1,14 +1,13 @@
 package binarysearchtree
 
 import (
-	"fmt"
+	"github.com/RedAFD/btreeprint"
 	"math/rand"
 	"testing"
 	"time"
 )
 
 func TestBinarySearchTree(t *testing.T) {
-
 	number := make([]int, 0)
 	for i := 0; i < 20; i++ {
 		rand.Seed(time.Now().UnixNano())
@@ -20,21 +19,24 @@ func TestBinarySearchTree(t *testing.T) {
 		tree.Append(val, nil)
 	}
 
-	fmt.Printf("rand number: %v \n", number)
-	fmt.Printf("print tree:\n%s\n", tree.Sprint())
+	t.Logf("\n%v", number)
+	t.Logf("\n%s", btreeprint.Sprint(tree.root))
 
-	removeNode := make(map[int]struct{})
+	uniq := make(map[int]struct{})
+	removeNode := make([]int, 0)
 	for {
 		rand.Seed(time.Now().UnixNano())
-		removeNode[rand.Intn(len(number)-1)] = struct{}{}
+		index := rand.Intn(len(number)-1)
+		if _, ok := uniq[index]; !ok {
+			uniq[index] = struct{}{}
+			removeNode = append(removeNode, number[index])
+			tree.Remove(number[index])
+		}
 		if len(removeNode) >= 5 {
 			break
 		}
 	}
-	fmt.Printf("remove node: ")
-	for key := range removeNode {
-		fmt.Printf("%d ", number[key])
-		tree.Remove(number[key])
-	}
-	fmt.Printf("\nprint tree:\n%s\n", tree.Sprint())
+
+	t.Logf("\nremoved: %v", removeNode)
+	t.Logf("\n%s", btreeprint.Sprint(tree.root))
 }

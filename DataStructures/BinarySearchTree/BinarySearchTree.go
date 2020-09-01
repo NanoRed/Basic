@@ -5,7 +5,7 @@ package binarysearchtree
 import (
 	"errors"
 	"fmt"
-	"strings"
+	"github.com/RedAFD/btreeprint"
 )
 
 // Tree tree structure
@@ -265,181 +265,27 @@ func (t *Tree) BroadFirstSearch() {
 	}
 }
 
-// Sprint print the tree data into a return variable
-func (t *Tree) Sprint() (content string) {
-	if t.root == nil {
-		return
-	}
-	type nodeInfo struct {
-		node       *Node
-		layer      int
-		count      int
-		index      int
-		len        int
-		str        string
-		leftNode   *nodeInfo
-		rightNode  *nodeInfo
-		parentNode *nodeInfo
-	}
-	layer := make([][]*nodeInfo, 0)
-	first := &nodeInfo{
-		node:  t.root,
-		layer: 1,
-		count: 1,
-		str:   fmt.Sprintf("%d(h:%d)", t.root.Key, t.root.Height),
-	}
-	first.len = len(first.str)
-	queue := []*nodeInfo{first}
-	currentLayer := 2
-	currentIndex := 0
-	currentCount := 1
-	for i := 0; i < int(t.count); i++ {
-		current := queue[i]
-		if current.node.Left != nil {
-			left := &nodeInfo{
-				node:       current.node.Left,
-				layer:      current.layer + 1,
-				str:        fmt.Sprintf("%d(h:%d)", current.node.Left.Key, current.node.Left.Height),
-				parentNode: current,
-			}
-			left.len = len(left.str)
-			if left.layer != currentLayer {
-				currentLayer = left.layer
-				currentIndex = 0
-				currentCount = 1
-			}
-			left.count = currentCount
-			currentCount++
-			left.index = currentIndex
-			currentIndex += left.len + 1
-			queue = append(queue, left)
-			current.leftNode = left
-		}
-		if current.node.Right != nil {
-			right := &nodeInfo{
-				node:       current.node.Right,
-				layer:      current.layer + 1,
-				str:        fmt.Sprintf("%d(h:%d)", current.node.Right.Key, current.node.Right.Height),
-				parentNode: current,
-			}
-			right.len = len(right.str)
-			if right.layer != currentLayer {
-				currentLayer = right.layer
-				currentIndex = 0
-				currentCount = 1
-			}
-			right.count = currentCount
-			currentCount++
-			right.index = currentIndex
-			currentIndex += right.len + 1
-			queue = append(queue, right)
-			current.rightNode = right
-		}
-		if current.layer > len(layer) {
-			layer = append(layer, make([]*nodeInfo, 0))
-		}
-		layer[current.layer-1] = append(layer[current.layer-1], current)
-	}
-	var alignLeft func(*nodeInfo)
-	var alignRight func(*nodeInfo)
-	alignLeft = func(current *nodeInfo) {
-		if current.leftNode == nil {
-			return
-		} else if val := current.index - current.leftNode.index; val > 0 { // 下一层移位
-			for k := current.leftNode.count - 1; k < len(layer[current.layer]); k++ {
-				layer[current.layer][k].index += val
-			}
-		} else if val < 0 { // 本层移位
-			for k := current.count - 1; k < len(layer[current.layer-1]); k++ {
-				layer[current.layer-1][k].index += -val
-			}
-		}
-		for j := current.leftNode.count - 1; j < len(layer[current.layer]); j++ {
-			alignLeft(layer[current.layer][j])
-			alignRight(layer[current.layer][j])
-		}
-	}
-	alignRight = func(current *nodeInfo) {
-		if current.rightNode == nil {
-			return
-		} else if !strings.Contains(current.str, "-+") {
-			if val := current.rightNode.index - current.index - current.len; val > 0 {
-				tmp := ""
-				for k := 0; k < val; k++ {
-					tmp += "-"
-				}
-				tmp += "+"
-				current.str += tmp
-				newLen := len(current.str)
-				offset := newLen - current.len
-				current.len = newLen
-				for k := current.count; k < len(layer[current.layer-1]); k++ {
-					layer[current.layer-1][k].index += offset
-				}
-			} else {
-				tmp := "-+"
-				current.str += tmp
-				newLen := len(current.str)
-				offset := newLen - current.len
-				current.len = newLen
-				for k := current.count; k < len(layer[current.layer-1]); k++ {
-					layer[current.layer-1][k].index += offset
-				}
-				offset2 := -val + 1
-				for k := current.rightNode.count - 1; k < len(layer[current.layer]); k++ {
-					layer[current.layer][k].index += offset2
-				}
-			}
-		} else {
-			for k := current.rightNode.count - 1; k < len(layer[current.layer]); k++ {
-				layer[current.layer][k].index += current.index + current.len - 1 - current.rightNode.index
-			}
-		}
-		for j := current.rightNode.count - 1; j < len(layer[current.layer]); j++ {
-			alignLeft(layer[current.layer][j])
-			alignRight(layer[current.layer][j])
-		}
-	}
-	for i := len(layer) - 2; i >= 0; i-- {
-		for j := 0; j < len(layer[i]); j++ {
-			alignLeft(layer[i][j])
-			alignRight(layer[i][j])
-		}
-	}
-	for i := 0; i < len(layer); i++ {
-		line1 := ""
-		line2 := ""
-		for j := 0; j < len(layer[i]); j++ {
-			if val := layer[i][j].index - len(line1); val > 0 {
-				for k := 0; k < val; k++ {
-					line1 += " "
-					line2 += " "
-				}
-			}
-			line1 += layer[i][j].str
-			if layer[i][j].leftNode != nil {
-				line2 += "|"
-			} else {
-				line2 += " "
-			}
-			for k := 0; k < layer[i][j].len-2; k++ {
-				line2 += " "
-			}
-			if layer[i][j].rightNode != nil {
-				line2 += "|"
-			} else {
-				line2 += " "
-			}
-		}
-		line1 = strings.ReplaceAll(line1, "-", "─")
-		line1 = strings.ReplaceAll(line1, "+", "┐")
-		content += line1 + "\n"
-		content += line2 + "\n"
-	}
-	return
-}
-
 // NewTree create a new tree object
 func NewTree() *Tree {
 	return &Tree{}
+}
+
+// GetKey implement btreeprint interface
+func (n *Node) GetKey() int {
+	return n.Key
+}
+
+// GetValue implement btreeprint interface
+func (n *Node) GetValue() interface{} {
+	return n.Value
+}
+
+// GetLeftNode implement btreeprint interface
+func (n *Node) GetLeftNode() btreeprint.BtreeNode {
+	return n.Left
+}
+
+// GetRightNode implement btreeprint interface
+func (n *Node) GetRightNode() btreeprint.BtreeNode {
+	return n.Right
 }
