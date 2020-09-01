@@ -1,3 +1,3 @@
-module github.com/RedAlfred/Basic
+module github.com/RedAFD/Basic
 
 go 1.15
