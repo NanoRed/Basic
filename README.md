@@ -1,2 +1,2 @@
 # Basic
-basic implement
+data structures,algorithms,etc. implementation
