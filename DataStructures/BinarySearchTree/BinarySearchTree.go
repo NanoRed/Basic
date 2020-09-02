@@ -3,7 +3,6 @@ package binarysearchtree
 // 二叉查找树 Binary Search Tree
 
 import (
-	"errors"
 	"fmt"
 	"github.com/RedAFD/btreeprint"
 )
@@ -35,53 +34,59 @@ func (t *Tree) Height() uint {
 
 // Append append a new node to the tree
 func (t *Tree) Append(key int, val interface{}) {
-	// recursive closure
-	var update func(node **Node, key int, val interface{}) (countAdd bool)
-	update = func(node **Node, key int, val interface{}) (countAdd bool) {
-		if *node == nil {
-			*node = &Node{
-				Key:    key,
-				Value:  val,
-				Height: 1,
-			}
-			countAdd = true
-			return
-		} else if key == (*node).Key {
-			(*node).Value = val
-			return
-		}
-		if key < (*node).Key {
-			countAdd = update(&(*node).Left, key, val)
-			if (*node).Left.Height == (*node).Height {
-				(*node).Height++
-			}
+
+	// nodes that need to be increased in height
+	increaseHeight := make(map[*Node]struct{})
+	increaseTracking := func(parent *Node, selected *Node, another *Node) {
+		// if selected leaf node height equal or higher than the another one, than it means has to increase
+		if another == nil || (selected != nil && selected.Height >= another.Height) {
+			increaseHeight[parent] = struct{}{}
 		} else {
-			countAdd = update(&(*node).Right, key, val)
-			if (*node).Right.Height == (*node).Height {
-				(*node).Height++
-			}
+			increaseHeight = make(map[*Node]struct{})
 		}
-		return
 	}
-	if update(&t.root, key, val) {
+
+	// search node
+	current := &t.root
+	for *current != nil {
+		if key < (*current).Key {
+			increaseTracking((*current), (*current).Left, (*current).Right)
+			current = &(*current).Left
+		} else if key > (*current).Key  {
+			increaseTracking((*current), (*current).Right, (*current).Left)
+			current = &(*current).Right
+		} else {
+			break
+		}
+	}
+	if *current == nil {
+		*current = &Node{
+			Key:    key,
+			Value:  val,
+			Height: 1,
+		}
 		t.count++
+		for node := range increaseHeight {
+			node.Height++
+		}
+	} else {
+		(*current).Value = val
 	}
 }
 
 // Search search node from the tree with key
-func (t *Tree) Search(key int) (*Node, error) {
+func (t *Tree) Search(key int) *Node {
 	current := t.root
 	for current != nil {
-		switch {
-		case key < current.Key:
+		if key < current.Key {
 			current = current.Left
-		case key > current.Key:
+		} else if key > current.Key  {
 			current = current.Right
-		default:
-			return current, nil
+		} else {
+			break
 		}
 	}
-	return nil, errors.New("not found")
+	return current
 }
 
 // Remove remove a specific node from the tree
