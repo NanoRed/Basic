@@ -34,38 +34,38 @@ func (t *Tree) Height() uint {
 }
 
 // Append append a new node to the tree
-func (t *Tree) Append(key int, val interface{}) *Tree {
+func (t *Tree) Append(key int, val interface{}) {
+	// recursive closure
+	var update func(node **Node, key int, val interface{}) (countAdd bool)
+	update = func(node **Node, key int, val interface{}) (countAdd bool) {
+		if *node == nil {
+			*node = &Node{
+				Key:    key,
+				Value:  val,
+				Height: 1,
+			}
+			countAdd = true
+			return
+		} else if key == (*node).Key {
+			(*node).Value = val
+			return
+		}
+		if key < (*node).Key {
+			countAdd = update(&(*node).Left, key, val)
+			if (*node).Left.Height == (*node).Height {
+				(*node).Height++
+			}
+		} else {
+			countAdd = update(&(*node).Right, key, val)
+			if (*node).Right.Height == (*node).Height {
+				(*node).Height++
+			}
+		}
+		return
+	}
 	if update(&t.root, key, val) {
 		t.count++
 	}
-	return t
-}
-
-func update(node **Node, key int, val interface{}) (countAdd bool) {
-	if *node == nil {
-		*node = &Node{
-			Key:    key,
-			Value:  val,
-			Height: 1,
-		}
-		countAdd = true
-		return
-	} else if key == (*node).Key {
-		(*node).Value = val
-		return
-	}
-	if key < (*node).Key {
-		countAdd = update(&(*node).Left, key, val)
-		if (*node).Left.Height == (*node).Height {
-			(*node).Height++
-		}
-	} else {
-		countAdd = update(&(*node).Right, key, val)
-		if (*node).Right.Height == (*node).Height {
-			(*node).Height++
-		}
-	}
-	return
 }
 
 // Search search node from the tree with key
@@ -84,125 +84,83 @@ func (t *Tree) Search(key int) (*Node, error) {
 	return nil, errors.New("not found")
 }
 
-type side int
+// Remove remove a specific node from the tree
+func (t *Tree) Remove(key int) {
 
-const (
-	locatedAtNoWhere side = iota
-	locatedAtItself
-	locatedAtLeft
-	locatedAtRight
-)
-
-// Remove remove a pecific node from the tree
-func (t *Tree) Remove(key int) *Tree {
-	parentNode, side, path := t.root.findParent(key)
-	switch side {
-	case locatedAtItself:
-		replacement := t.root.takeOutReplacement()
-		if replacement == nil {
-			t.root = t.root.Left
+	// nodes that need to be reduced in height
+	reduceHeight := make(map[*Node]struct{})
+	reduceTracking := func(parent *Node, selected *Node, another *Node) {
+		// if another leaf node height equal or higher than the selected one, than it means no need to reduce
+		if selected == nil || (another != nil && another.Height >= selected.Height) {
+			reduceHeight = make(map[*Node]struct{})
 		} else {
-			replacement.Left, replacement.Right, replacement.Height = t.root.Left, t.root.Right, t.root.Height
-			t.root = replacement
+			reduceHeight[parent] = struct{}{}
 		}
-		t.count--
-	case locatedAtLeft:
-		replacement := parentNode.Left.takeOutReplacement()
-		if replacement == nil {
-			parentNode.Left = parentNode.Left.Left
-		} else {
-			replacement.Left, replacement.Right, replacement.Height = parentNode.Left.Left, parentNode.Left.Right, parentNode.Left.Height
-			parentNode.Left = replacement
-		}
-		for _, val := range path {
-			val.correctHeight()
-		}
-		t.count--
-	case locatedAtRight:
-		replacement := parentNode.Right.takeOutReplacement()
-		if replacement == nil {
-			parentNode.Right = parentNode.Right.Left
-		} else {
-			replacement.Left, replacement.Right, replacement.Height = parentNode.Right.Left, parentNode.Right.Right, parentNode.Right.Height
-			parentNode.Right = replacement
-		}
-		for _, val := range path {
-			val.correctHeight()
-		}
-		t.count--
 	}
-	return t
-}
 
-// locate the parent node of the node to be removed
-// side means the node to be removed is in *side* side of the returned parent node
-// path means the path from the returned parent node to the root node
-func (n *Node) findParent(key int) (parentNode *Node, side side, path []*Node) {
-	if key == n.Key {
-		side = locatedAtItself
-		return
-	} else if n == nil {
-		side = locatedAtNoWhere
+	// find node to be removed and its parent node
+	var remNode *Node
+	var remNodeParent *Node
+	for remNode = t.root; remNode != nil; {
+		if key < remNode.Key {
+			reduceTracking(remNode, remNode.Left, remNode.Right)
+			remNodeParent = remNode
+			remNode = remNode.Left
+		} else if key > remNode.Key  {
+			reduceTracking(remNode, remNode.Right, remNode.Left)
+			remNodeParent = remNode
+			remNode = remNode.Right
+		} else {
+			break
+		}
+	}
+	if remNode == nil {
 		return
 	}
-	if key < n.Key {
-		if parentNode, side, path = n.Left.findParent(key); side == locatedAtItself {
-			parentNode = n
-			side = locatedAtLeft
-			path = []*Node{n}
+
+	// find replacement node and take out
+	var repNode *Node
+	if remNode.Right != nil {
+		reduceTracking(remNode, remNode.Right, remNode.Left)
+		repNode = remNode.Right
+		repNodeParent := remNode
+		for repNode.Left != nil {
+			reduceTracking(repNode, repNode.Left, repNode.Right)
+			repNodeParent = repNode
+			repNode = repNode.Left
+		}
+		if repNodeParent == remNode {
+			repNodeParent.Right = repNode.Right
 		} else {
-			path = append(path, n)
+			repNodeParent.Left = repNode.Right
+		}
+	} else if remNode.Left != nil {
+		reduceHeight[remNode] = struct{}{} // not need to call reduceTracking(), 100% need to be reduced
+		repNode = remNode.Left
+		remNode.Left = repNode.Left
+		remNode.Right = repNode.Right
+	}
+
+	// reduce node height
+	for node := range reduceHeight {
+		node.Height--
+	}
+
+	// replace node
+	if repNode != nil {
+		repNode.Left = remNode.Left
+		repNode.Right = remNode.Right
+		repNode.Height = remNode.Height
+	}
+	if remNodeParent != nil {
+		if remNodeParent.Left == remNode {
+			remNodeParent.Left = repNode
+		} else {
+			remNodeParent.Right = repNode
 		}
 	} else {
-		if parentNode, side, path = n.Right.findParent(key); side == locatedAtItself {
-			parentNode = n
-			side = locatedAtRight
-			path = []*Node{n}
-		} else {
-			path = append(path, n)
-		}
+		t.root = repNode
 	}
-	return
-}
-
-// find and take out the replacement node
-// which is the largest node of the right subtree of the node to be removed
-func (n *Node) takeOutReplacement(params ...interface{}) (replacementNode *Node) {
-	if len(params) == 0 {
-		// non-recursive logic
-		params = append(params, true)
-		replacementNode = n.Right
-		if replacementNode == nil {
-			return
-		} else if replacementNode.Left == nil {
-			n.Right = replacementNode.Right
-			n.correctHeight()
-			return
-		}
-	} else {
-		// the recursive part
-		replacementNode = n.Left
-		if replacementNode.Left == nil {
-			n.Left = replacementNode.Right
-			n.correctHeight()
-			return
-		}
-	}
-	replacementNode = replacementNode.takeOutReplacement(params...)
-	n.correctHeight()
-	return
-}
-
-func (n *Node) correctHeight() {
-	n.Height = 0
-	if n.Left != nil {
-		n.Height = n.Left.Height
-	}
-	if n.Right != nil && n.Right.Height > n.Height {
-		n.Height = n.Right.Height
-	}
-	n.Height++
-	return
 }
 
 // DepthFirstSearch depth first search
@@ -277,7 +235,7 @@ func (n *Node) GetKey() int {
 
 // GetValue implement btreeprint interface
 func (n *Node) GetValue() interface{} {
-	return n.Value
+	return n.Height // n.Value
 }
 
 // GetLeftNode implement btreeprint interface

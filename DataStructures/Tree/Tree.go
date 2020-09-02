@@ -22,13 +22,13 @@ func (t *Tree) Len() uint {
 }
 
 // Append append a new node to the tree
-func (t *Tree) Append(index *[]int, val interface{}) *Tree {
+func (t *Tree) Append(index *[]int, val interface{}) {
 	if index == nil {
 		t.root = &Node{
 			Value: val,
 		}
 		t.count++
-		return t
+		return
 	}
 	node := t.root
 	for i := 0; i < len(*index); i++ {
@@ -38,15 +38,14 @@ func (t *Tree) Append(index *[]int, val interface{}) *Tree {
 		Value: val,
 	})
 	t.count++
-	return t
 }
 
-// Remove remove a pecific node from the tree
-func (t *Tree) Remove(index *[]int) *Tree {
+// Remove remove a specific node from the tree
+func (t *Tree) Remove(index *[]int) {
 	if index == nil {
 		t.root = nil
 		t.count = 0
-		return t
+		return
 	}
 	node := t.root
 	count := len(*index)
@@ -57,7 +56,6 @@ func (t *Tree) Remove(index *[]int) *Tree {
 		}
 		node = node.Child[(*index)[i]]
 	}
-	return t
 }
 
 // DLR pre-order traversal

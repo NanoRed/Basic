@@ -78,7 +78,7 @@ func (l *List) Search(index uint) (n *Node, err error) {
 }
 
 // Append append a new node to the list
-func (l *List) Append(val interface{}) *List {
+func (l *List) Append(val interface{}) {
 	if l.tail == nil {
 		l.head = &Node{
 			Value: val,
@@ -92,11 +92,10 @@ func (l *List) Append(val interface{}) *List {
 		l.tail = l.tail.Next
 	}
 	l.length++
-	return l
 }
 
-// Insert insert a node to pecific location of the list
-func (l *List) Insert(val interface{}, index uint) *List {
+// Insert insert a node to specific location of the list
+func (l *List) Insert(val interface{}, index uint) {
 	node := &Node{
 		Value: val,
 	}
@@ -116,11 +115,10 @@ func (l *List) Insert(val interface{}, index uint) *List {
 		prevNode.Next = node
 	}
 	l.length++
-	return l
 }
 
-// Remove remove a pecific node from the list
-func (l *List) Remove(index uint) *List {
+// Remove remove a specific node from the list
+func (l *List) Remove(index uint) {
 	switch {
 	case index == 0:
 		if l.length == 0 {
@@ -142,11 +140,10 @@ func (l *List) Remove(index uint) *List {
 		}
 	}
 	l.length--
-	return l
 }
 
 // Reverse reverse the list
-func (l *List) Reverse() *List {
+func (l *List) Reverse() {
 	l.Reset()
 	var prevNode *Node
 	for {
@@ -159,7 +156,6 @@ func (l *List) Reverse() *List {
 	}
 	l.head, l.tail = l.tail, l.head
 	l.Reset()
-	return l
 }
 
 // Slice return the slice format data of the list

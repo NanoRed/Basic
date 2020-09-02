@@ -130,7 +130,7 @@ func (l *List) Search(index int) (n *Node, err error) {
 }
 
 // Append append a new node to the list
-func (l *List) Append(val interface{}) *List {
+func (l *List) Append(val interface{}) {
 	if l.tail == nil {
 		l.head = &Node{
 			Value: val,
@@ -145,11 +145,10 @@ func (l *List) Append(val interface{}) *List {
 		l.tail = l.tail.Next
 	}
 	l.length++
-	return l
 }
 
-// Insert insert a node to pecific location of the list
-func (l *List) Insert(val interface{}, index int) *List {
+// Insert insert a node to specific location of the list
+func (l *List) Insert(val interface{}, index int) {
 	node := &Node{
 		Value: val,
 	}
@@ -174,11 +173,10 @@ func (l *List) Insert(val interface{}, index int) *List {
 		origNode.Prev = node
 	}
 	l.length++
-	return l
 }
 
-// Remove remove a pecific node from the list
-func (l *List) Remove(index int) *List {
+// Remove remove a specific node from the list
+func (l *List) Remove(index int) {
 	rNode, err := l.Search(index)
 	if err != nil {
 		panic(err)
@@ -195,7 +193,6 @@ func (l *List) Remove(index int) *List {
 		l.tail = rNode.Prev
 	}
 	l.length--
-	return l
 }
 
 // Slice return the slice format data of the list
