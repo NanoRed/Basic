@@ -25,6 +25,11 @@ func (t *Tree) Len() uint {
 	return t.count
 }
 
+// Entry get entry node
+func (t *Tree) Entry() *Node {
+	return t.root
+}
+
 // Search search node from the tree by index
 func (t *Tree) Search(index []int) (node *Node, err error) {
 	defer func() {

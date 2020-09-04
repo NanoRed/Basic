@@ -32,6 +32,11 @@ func (t *Tree) Height() uint {
 	return t.root.Height
 }
 
+// Entry get entry node
+func (t *Tree) Entry() *Node {
+	return t.root
+}
+
 // Search search node from the tree by key
 func (t *Tree) Search(key int) *Node {
 	current := t.root

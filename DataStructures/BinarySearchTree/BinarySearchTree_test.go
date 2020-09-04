@@ -13,12 +13,10 @@ func TestBinarySearchTree(t *testing.T) {
 		rand.Seed(time.Now().UnixNano())
 		number = append(number, rand.Intn(100000))
 	}
-
 	tree := NewTree()
 	for _, val := range number {
 		tree.Append(val, nil)
 	}
-
 	t.Logf("\n%v", number)
 	t.Logf("\n%s", treeprint.Sprint(tree.root))
 
@@ -36,7 +34,6 @@ func TestBinarySearchTree(t *testing.T) {
 			break
 		}
 	}
-
 	t.Logf("\nremoved: %v", removeNode)
 	t.Logf("\n%s", treeprint.Sprint(tree.root))
 }
