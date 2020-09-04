@@ -4,7 +4,7 @@ package binarysearchtree
 
 import (
 	"fmt"
-	"github.com/RedAFD/btreeprint"
+	"github.com/RedAFD/treeprint"
 )
 
 // Tree tree structure
@@ -30,6 +30,21 @@ func (t *Tree) Len() uint {
 // Height tree height
 func (t *Tree) Height() uint {
 	return t.root.Height
+}
+
+// Search search node from the tree by key
+func (t *Tree) Search(key int) *Node {
+	current := t.root
+	for current != nil {
+		if key < current.Key {
+			current = current.Left
+		} else if key > current.Key  {
+			current = current.Right
+		} else {
+			break
+		}
+	}
+	return current
 }
 
 // Append append a new node to the tree
@@ -72,21 +87,6 @@ func (t *Tree) Append(key int, val interface{}) {
 	} else {
 		(*current).Value = val
 	}
-}
-
-// Search search node from the tree with key
-func (t *Tree) Search(key int) *Node {
-	current := t.root
-	for current != nil {
-		if key < current.Key {
-			current = current.Left
-		} else if key > current.Key  {
-			current = current.Right
-		} else {
-			break
-		}
-	}
-	return current
 }
 
 // Remove remove a specific node from the tree
@@ -233,22 +233,21 @@ func NewTree() *Tree {
 	return &Tree{}
 }
 
-// GetKey implement btreeprint interface
-func (n *Node) GetKey() int {
+// GetKey implement treeprint
+func (n *Node) GetKey() interface{} {
 	return n.Key
 }
 
-// GetValue implement btreeprint interface
+// GetValue implement treeprint
 func (n *Node) GetValue() interface{} {
-	return n.Height // n.Value
+	return fmt.Sprintf("(h:%d)", n.Height) // n.Value
 }
 
-// GetLeftNode implement btreeprint interface
-func (n *Node) GetLeftNode() btreeprint.BtreeNode {
-	return n.Left
-}
-
-// GetRightNode implement btreeprint interface
-func (n *Node) GetRightNode() btreeprint.BtreeNode {
-	return n.Right
+// RangeNode implement treeprint
+func (n *Node) RangeNode() chan treeprint.TreeNode {
+	c := make(chan treeprint.TreeNode, 2)
+	c <- n.Left
+	c <- n.Right
+	close(c)
+	return c
 }

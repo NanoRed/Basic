@@ -2,7 +2,11 @@ package tree
 
 // 树 Tree
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+	"github.com/RedAFD/treeprint"
+)
 
 // Tree tree structure
 type Tree struct {
@@ -13,7 +17,7 @@ type Tree struct {
 // Node tree node structure
 type Node struct {
 	Value interface{}
-	Child []*Node
+	Leaf []*Node
 }
 
 // Len total count of the tree nodes
@@ -21,41 +25,78 @@ func (t *Tree) Len() uint {
 	return t.count
 }
 
-// Append append a new node to the tree
-func (t *Tree) Append(index *[]int, val interface{}) {
-	if index == nil {
-		t.root = &Node{
+// Search search node from the tree by index
+func (t *Tree) Search(index []int) (node *Node, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("index out of range")
+		}
+	}()
+	node = t.root
+	layer := len(index)
+	for i := 0; i < layer; i++ {
+		node = node.Leaf[index[i]]
+	}
+	if node == nil {
+		err = errors.New("index out of range")
+	}
+	return
+}
+
+// Append append a new node to the tree by index
+// pass []int{} to index means root node
+// pass []int{0} means the 1st leaf node of root
+// pass []int{0, 1} means the 2nd leaf node of the 1st leaf node of root
+// etc.
+func (t *Tree) Append(index []int, val interface{}) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("index out of range")
+		}
+	}()
+	entry := &t.root
+	layer := len(index)
+	for i := 0; i < layer; i++ {
+		if i == layer-1 {
+			if index[i] == len((*entry).Leaf) {
+				(*entry).Leaf = append((*entry).Leaf, nil)
+			}
+		}
+		entry = &(*entry).Leaf[index[i]]
+	}
+	if *entry == nil {
+		*entry = &Node{
 			Value: val,
 		}
 		t.count++
-		return
+	} else {
+		(*entry).Value = val
 	}
-	node := t.root
-	for i := 0; i < len(*index); i++ {
-		node = node.Child[(*index)[i]]
-	}
-	node.Child = append(node.Child, &Node{
-		Value: val,
-	})
-	t.count++
+	return
 }
 
-// Remove remove a specific node from the tree
-func (t *Tree) Remove(index *[]int) {
-	if index == nil {
-		t.root = nil
-		t.count = 0
-		return
-	}
-	node := t.root
-	count := len(*index)
-	for i := 0; i < count; i++ {
-		if i == count-1 {
-			node.Child = append(node.Child[:(*index)[i]], node.Child[(*index)[i]+1:]...)
-			break
+// Remove remove a specific node from the tree by index
+// pass []int{} to index means root node
+// pass []int{0} means the 1st leaf node of root
+// pass []int{0, 1} means the 2nd leaf node of the 1st leaf node of root
+// etc.
+func (t *Tree) Remove(index []int) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("index out of range")
 		}
-		node = node.Child[(*index)[i]]
+	}()
+	entry := &t.root
+	layer := len(index)
+	for i := 0; i < layer; i++ {
+		if i == layer-1 {
+			(*entry).Leaf = append((*entry).Leaf[:index[i]], (*entry).Leaf[index[i]+1:]...)
+			return
+		}
+		entry = &(*entry).Leaf[index[i]]
 	}
+	*entry = nil
+	return
 }
 
 // DLR pre-order traversal
@@ -66,8 +107,8 @@ func (t *Tree) DLR() {
 	var f func(*Node)
 	f = func(node *Node) {
 		fmt.Println(node.Value)
-		for i := 0; i < len(node.Child); i++ {
-			f(node.Child[i])
+		for i := 0; i < len(node.Leaf); i++ {
+			f(node.Leaf[i])
 		}
 	}
 	f(t.root)
@@ -80,8 +121,8 @@ func (t *Tree) LRD() {
 	}
 	var f func(*Node)
 	f = func(node *Node) {
-		for i := 0; i < len(node.Child); i++ {
-			f(node.Child[i])
+		for i := 0; i < len(node.Leaf); i++ {
+			f(node.Leaf[i])
 		}
 		fmt.Println(node.Value)
 	}
@@ -99,13 +140,13 @@ func (t *Tree) DepthFirstSearch() {
 		if len(stack) == 0 {
 			break
 		}
-		if len(stack[0].Child) == 0 {
+		if len(stack[0].Leaf) == 0 {
 			stack = stack[1:]
 			if len(stack) != 0 {
-				stack[0].Child = stack[0].Child[1:]
+				stack[0].Leaf = stack[0].Leaf[1:]
 			}
 		} else {
-			stack = append([]Node{*stack[0].Child[0]}, stack...)
+			stack = append([]Node{*stack[0].Leaf[0]}, stack...)
 			fmt.Println(stack[0].Value)
 		}
 	}
@@ -123,9 +164,9 @@ func (t *Tree) BroadFirstSearch() {
 		fmt.Println(current.Value)
 		queue = queue[1:]
 		queueLen--
-		cLen := len(current.Child)
+		cLen := len(current.Leaf)
 		if cLen > 0 {
-			queue = append(queue, current.Child...)
+			queue = append(queue, current.Leaf...)
 			queueLen += cLen
 		}
 	}
@@ -134,4 +175,25 @@ func (t *Tree) BroadFirstSearch() {
 // NewTree create a new tree object
 func NewTree() *Tree {
 	return &Tree{}
+}
+
+// GetKey implement treeprint
+func (n *Node) GetKey() interface{} {
+	return n.Value
+}
+
+// GetValue implement treeprint
+func (n *Node) GetValue() interface{} {
+	return ""
+}
+
+// RangeNode implement treeprint
+func (n *Node) RangeNode() chan treeprint.TreeNode {
+	count := len(n.Leaf)
+	c := make(chan treeprint.TreeNode, count)
+	for i := 0; i < count; i++ {
+		c <- n.Leaf[i]
+	}
+	close(c)
+	return c
 }

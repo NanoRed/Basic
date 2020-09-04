@@ -1,7 +1,7 @@
 package binarysearchtree
 
 import (
-	"github.com/RedAFD/btreeprint"
+	"github.com/RedAFD/treeprint"
 	"math/rand"
 	"testing"
 	"time"
@@ -20,7 +20,7 @@ func TestBinarySearchTree(t *testing.T) {
 	}
 
 	t.Logf("\n%v", number)
-	t.Logf("\n%s", btreeprint.Sprint(tree.root))
+	t.Logf("\n%s", treeprint.Sprint(tree.root))
 
 	uniq := make(map[int]struct{})
 	removeNode := make([]int, 0)
@@ -38,5 +38,5 @@ func TestBinarySearchTree(t *testing.T) {
 	}
 
 	t.Logf("\nremoved: %v", removeNode)
-	t.Logf("\n%s", btreeprint.Sprint(tree.root))
+	t.Logf("\n%s", treeprint.Sprint(tree.root))
 }
