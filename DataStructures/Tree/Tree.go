@@ -5,6 +5,7 @@ package tree
 import (
 	"errors"
 	"fmt"
+
 	"github.com/RedAFD/treeprint"
 )
 
@@ -17,7 +18,7 @@ type Tree struct {
 // Node tree node structure
 type Node struct {
 	Value interface{}
-	Leaf []*Node
+	Leaf  []*Node
 }
 
 // Len total count of the tree nodes

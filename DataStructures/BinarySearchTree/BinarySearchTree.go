@@ -4,6 +4,7 @@ package binarysearchtree
 
 import (
 	"fmt"
+
 	"github.com/RedAFD/treeprint"
 )
 
@@ -43,7 +44,7 @@ func (t *Tree) Search(key int) *Node {
 	for current != nil {
 		if key < current.Key {
 			current = current.Left
-		} else if key > current.Key  {
+		} else if key > current.Key {
 			current = current.Right
 		} else {
 			break
@@ -72,7 +73,7 @@ func (t *Tree) Append(key int, val interface{}) {
 		if key < (*current).Key {
 			increaseTracking((*current), (*current).Left, (*current).Right)
 			current = &(*current).Left
-		} else if key > (*current).Key  {
+		} else if key > (*current).Key {
 			increaseTracking((*current), (*current).Right, (*current).Left)
 			current = &(*current).Right
 		} else {
@@ -116,7 +117,7 @@ func (t *Tree) Remove(key int) {
 			reduceTracking(remNode, remNode.Left, remNode.Right)
 			remNodeParent = remNode
 			remNode = remNode.Left
-		} else if key > remNode.Key  {
+		} else if key > remNode.Key {
 			reduceTracking(remNode, remNode.Right, remNode.Left)
 			remNodeParent = remNode
 			remNode = remNode.Right

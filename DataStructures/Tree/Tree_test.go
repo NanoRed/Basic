@@ -1,10 +1,11 @@
 package tree
 
 import (
-	"github.com/RedAFD/treeprint"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/RedAFD/treeprint"
 )
 
 func TestTree(t *testing.T) {

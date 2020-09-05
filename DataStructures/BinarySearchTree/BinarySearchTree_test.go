@@ -1,10 +1,11 @@
 package binarysearchtree
 
 import (
-	"github.com/RedAFD/treeprint"
 	"math/rand"
 	"testing"
 	"time"
+
+	"github.com/RedAFD/treeprint"
 )
 
 func TestBinarySearchTree(t *testing.T) {
@@ -24,7 +25,7 @@ func TestBinarySearchTree(t *testing.T) {
 	removeNode := make([]int, 0)
 	for {
 		rand.Seed(time.Now().UnixNano())
-		index := rand.Intn(len(number)-1)
+		index := rand.Intn(len(number) - 1)
 		if _, ok := uniq[index]; !ok {
 			uniq[index] = struct{}{}
 			removeNode = append(removeNode, number[index])
