@@ -2,6 +2,7 @@ package avltree
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/RedAFD/treeprint"
 )
@@ -85,12 +86,80 @@ func (t *Tree) Append(key int, val interface{}) {
 			node.correctHeight()
 			node.rebalance()
 		}
+		t.root = node
 	} else {
 		(*current).Value = val
 	}
 }
 
-func (n *Node) rebalance() {
+// Remove remove a specific node from the tree
+func (t *Tree) Remove(key int) {
+
+	// find node to be removed
+	var remNode *Node
+	for remNode = t.root; remNode != nil; {
+		if key < remNode.Key {
+			remNode = remNode.Left
+		} else if key > remNode.Key {
+			remNode = remNode.Right
+		} else {
+			break
+		}
+	}
+	if remNode == nil {
+		return
+	}
+
+	// find replacement node and take out
+	var repNode *Node
+	if remNode.Right != nil {
+		repNode = remNode.Right
+		for repNode.Left != nil {
+			repNode = repNode.Left
+		}
+		if repNode.Parent == remNode {
+			repNode.Parent.Right = repNode.Right
+			if repNode.Right != nil {
+				repNode.Right.Parent = repNode.Parent
+			}
+		} else {
+			repNode.Parent.Left = repNode.Right
+			if repNode.Right != nil {
+				repNode.Right.Parent = repNode.Parent
+			}
+		}
+	} else if remNode.Left != nil {
+		repNode = remNode.Left
+		remNode.Left = repNode.Left
+		if repNode.Left != nil {
+			repNode.Left.Parent = remNode
+		}
+		remNode.Right = repNode.Right
+		if repNode.Right != nil {
+			repNode.Right.Parent = remNode
+		}
+	}
+
+	// replace node
+	var dirtyNode *Node
+	if repNode != nil {
+		dirtyNode = repNode.Parent
+		remNode.Key = repNode.Key
+		remNode.Value = repNode.Value
+	} else {
+		remNode = nil
+	}
+	t.count--
+
+	// height recorrect and node rebalance
+	for dirtyNode != nil {
+		dirtyNode.correctHeight()
+		dirtyNode.rebalance()
+		dirtyNode = dirtyNode.Parent
+	}
+}
+
+func (n *Node) rebalance(param ...interface{}) {
 	difference := n.leafHeightDifference()
 	if difference > 1 {
 		if n.Left.leafHeightDifference() < 0 {
@@ -125,6 +194,8 @@ func (n *Node) prepareRotateLeft() {
 		riseNode.Right.Parent = fallNode
 	}
 	riseNode.Right, fallNode.Parent = fallNode, riseNode
+	fallNode.correctHeight()
+	riseNode.correctHeight()
 }
 
 func (n *Node) rotateLeft() {
@@ -154,6 +225,8 @@ func (n *Node) prepareRotateRight() {
 		riseNode.Left.Parent = fallNode
 	}
 	riseNode.Left, fallNode.Parent = fallNode, riseNode
+	fallNode.correctHeight()
+	riseNode.correctHeight()
 }
 
 func (n *Node) rotateRight() {
@@ -197,7 +270,11 @@ func (n *Node) GetKey() interface{} {
 
 // GetValue implement treeprint
 func (n *Node) GetValue() interface{} {
-	return fmt.Sprintf("(h:%d)", n.Height) // n.Value
+	parentKey := ""
+	if n.Parent != nil {
+		parentKey = ";" + strconv.Itoa(n.Parent.Key)
+	}
+	return fmt.Sprintf("(%v%s)", n.Height, parentKey) // n.Value
 }
 
 // RangeNode implement treeprint

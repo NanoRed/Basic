@@ -20,6 +20,7 @@ func TestBinarySearchTree(t *testing.T) {
 	}
 	t.Logf("\n%v", number)
 	t.Logf("\n%s", treeprint.Sprint(tree.root))
+	t.Logf("\ntotal node:%d", tree.count)
 
 	uniq := make(map[int]struct{})
 	removeNode := make([]int, 0)
@@ -37,4 +38,5 @@ func TestBinarySearchTree(t *testing.T) {
 	}
 	t.Logf("\nremoved: %v", removeNode)
 	t.Logf("\n%s", treeprint.Sprint(tree.root))
+	t.Logf("\ntotal node:%d", tree.count)
 }

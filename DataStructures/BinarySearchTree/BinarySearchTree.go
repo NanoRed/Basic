@@ -172,6 +172,8 @@ func (t *Tree) Remove(key int) {
 	} else {
 		t.root = repNode
 	}
+
+	t.count--
 }
 
 // DepthFirstSearch depth first search
