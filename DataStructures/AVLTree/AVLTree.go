@@ -96,28 +96,28 @@ func (t *Tree) Append(key int, val interface{}) {
 func (t *Tree) Remove(key int) {
 
 	// find node to be removed
-	var remNode *Node
-	for remNode = t.root; remNode != nil; {
-		if key < remNode.Key {
-			remNode = remNode.Left
-		} else if key > remNode.Key {
-			remNode = remNode.Right
+	var remNode **Node
+	for remNode = &t.root; *remNode != nil; {
+		if key < (*remNode).Key {
+			remNode = &(*remNode).Left
+		} else if key > (*remNode).Key {
+			remNode = &(*remNode).Right
 		} else {
 			break
 		}
 	}
-	if remNode == nil {
+	if *remNode == nil {
 		return
 	}
 
 	// find replacement node and take out
 	var repNode *Node
-	if remNode.Right != nil {
-		repNode = remNode.Right
+	if (*remNode).Right != nil {
+		repNode = (*remNode).Right
 		for repNode.Left != nil {
 			repNode = repNode.Left
 		}
-		if repNode.Parent == remNode {
+		if repNode.Parent == *remNode {
 			repNode.Parent.Right = repNode.Right
 			if repNode.Right != nil {
 				repNode.Right.Parent = repNode.Parent
@@ -128,34 +128,38 @@ func (t *Tree) Remove(key int) {
 				repNode.Right.Parent = repNode.Parent
 			}
 		}
-	} else if remNode.Left != nil {
-		repNode = remNode.Left
-		remNode.Left = repNode.Left
+	} else if (*remNode).Left != nil {
+		repNode = (*remNode).Left
+		(*remNode).Left = repNode.Left
 		if repNode.Left != nil {
-			repNode.Left.Parent = remNode
+			repNode.Left.Parent = *remNode
 		}
-		remNode.Right = repNode.Right
+		(*remNode).Right = repNode.Right
 		if repNode.Right != nil {
-			repNode.Right.Parent = remNode
+			repNode.Right.Parent = *remNode
 		}
 	}
 
 	// replace node
 	var dirtyNode *Node
 	if repNode != nil {
-		dirtyNode = repNode.Parent
-		remNode.Key = repNode.Key
-		remNode.Value = repNode.Value
+		dirtyNode = repNode
+		(*remNode).Key = repNode.Key
+		(*remNode).Value = repNode.Value
 	} else {
-		remNode = nil
+		dirtyNode = *remNode
+		*remNode = nil
 	}
 	t.count--
 
 	// height recorrect and node rebalance
-	for dirtyNode != nil {
-		dirtyNode.correctHeight()
-		dirtyNode.rebalance()
+	for dirtyNode.Parent != nil {
+		dirtyNode.Parent.correctHeight()
+		dirtyNode.Parent.rebalance()
 		dirtyNode = dirtyNode.Parent
+	}
+	if t.root != nil {
+		t.root = dirtyNode
 	}
 }
 

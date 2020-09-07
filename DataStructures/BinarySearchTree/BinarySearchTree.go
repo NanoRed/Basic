@@ -109,47 +109,44 @@ func (t *Tree) Remove(key int) {
 		}
 	}
 
-	// find node to be removed and its parent node
-	var remNode *Node
-	var remNodeParent *Node
-	for remNode = t.root; remNode != nil; {
-		if key < remNode.Key {
-			reduceTracking(remNode, remNode.Left, remNode.Right)
-			remNodeParent = remNode
-			remNode = remNode.Left
-		} else if key > remNode.Key {
-			reduceTracking(remNode, remNode.Right, remNode.Left)
-			remNodeParent = remNode
-			remNode = remNode.Right
+	// find the pointer of the node to be removed
+	var remNode **Node
+	for remNode = &t.root; *remNode != nil; {
+		if key < (*remNode).Key {
+			reduceTracking(*remNode, (*remNode).Left, (*remNode).Right)
+			remNode = &(*remNode).Left
+		} else if key > (*remNode).Key {
+			reduceTracking(*remNode, (*remNode).Right, (*remNode).Left)
+			remNode = &(*remNode).Right
 		} else {
 			break
 		}
 	}
-	if remNode == nil {
+	if *remNode == nil {
 		return
 	}
 
 	// find replacement node and take out
 	var repNode *Node
-	if remNode.Right != nil {
-		reduceTracking(remNode, remNode.Right, remNode.Left)
-		repNode = remNode.Right
-		repNodeParent := remNode
+	if (*remNode).Right != nil {
+		reduceTracking(*remNode, (*remNode).Right, (*remNode).Left)
+		repNode = (*remNode).Right
+		repNodeParent := *remNode
 		for repNode.Left != nil {
 			reduceTracking(repNode, repNode.Left, repNode.Right)
 			repNodeParent = repNode
 			repNode = repNode.Left
 		}
-		if repNodeParent == remNode {
+		if repNodeParent == *remNode {
 			repNodeParent.Right = repNode.Right
 		} else {
 			repNodeParent.Left = repNode.Right
 		}
-	} else if remNode.Left != nil {
-		reduceHeight[remNode] = struct{}{} // not need to call reduceTracking(), 100% need to be reduced
-		repNode = remNode.Left
-		remNode.Left = repNode.Left
-		remNode.Right = repNode.Right
+	} else if (*remNode).Left != nil {
+		reduceHeight[*remNode] = struct{}{} // not need to call reduceTracking(), 100% need to be reduced
+		repNode = (*remNode).Left
+		(*remNode).Left = repNode.Left
+		(*remNode).Right = repNode.Right
 	}
 
 	// reduce node height
@@ -159,20 +156,11 @@ func (t *Tree) Remove(key int) {
 
 	// replace node
 	if repNode != nil {
-		repNode.Left = remNode.Left
-		repNode.Right = remNode.Right
-		repNode.Height = remNode.Height
-	}
-	if remNodeParent != nil {
-		if remNodeParent.Left == remNode {
-			remNodeParent.Left = repNode
-		} else {
-			remNodeParent.Right = repNode
-		}
+		(*remNode).Key = repNode.Key
+		(*remNode).Value = repNode.Value
 	} else {
-		t.root = repNode
+		*remNode = nil
 	}
-
 	t.count--
 }
 
